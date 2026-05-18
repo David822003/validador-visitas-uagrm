@@ -1121,12 +1121,18 @@ export default function App() {
                                   <Users size={14} className="text-slate-300"/>
                                   {allRegistrations.filter(r => r.visita_id === v.id).length} / {v.cupos_max}
                                 </div>
-                                <div className="w-16 h-1 bg-slate-100 rounded-full mt-1.5 overflow-hidden">
-                                  <div 
-                                    className="h-full bg-indigo-500 rounded-full transition-all" 
-                                    style={{width: `${Math.min(100, (allRegistrations.filter(r => r.visita_id === v.id).length / v.cupos_max) * 100)}%`}}
-                                  ></div>
-                                </div>
+                                  <div className="w-16 h-1 bg-slate-100 rounded-full mt-1.5 overflow-hidden">
+                                    <div 
+                                      className="h-full bg-indigo-500 rounded-full transition-all" 
+                                      style={{
+                                        width: `${Math.min(100, 
+                                          (v.cupos_max > 0) 
+                                            ? (allRegistrations.filter(r => r.visita_id === v.id).length / v.cupos_max) * 100 
+                                            : 0
+                                        )}%`
+                                      }}
+                                    ></div>
+                                  </div>
                               </div>
                             </td>
                             <td className="p-5 text-right pr-8">
@@ -1414,7 +1420,14 @@ export default function App() {
                           {allRegistrations.filter(r => r.visita_id === v.id).length}<span className="text-2xl text-slate-300">/{v.cupos_max}</span>
                         </div>
                         <div className="w-full bg-slate-100 h-2 rounded-full mt-6 overflow-hidden">
-                          <div className="bg-emerald-500 h-full rounded-full transition-all duration-1000" style={{width: `${(allRegistrations.filter(r => r.visita_id === v.id).length / v.cupos_max) * 100}%`}}></div>
+                          <div 
+                            className="bg-emerald-500 h-full rounded-full transition-all duration-1000" 
+                            style={{
+                              width: `${Math.min(100, (v.cupos_max > 0) 
+                                ? (allRegistrations.filter(r => r.visita_id === v.id).length / v.cupos_max) * 100 
+                                : 0)}%`
+                            }}
+                          ></div>
                         </div>
                       </div>
                     ))}
