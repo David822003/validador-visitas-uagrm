@@ -9,6 +9,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { DatabaseStudent, VISITS_REQUIREMENTS, TechnicalVisit, Registration } from './types';
 import { parseStudentReport, parseComplementReport } from './lib/parser';
 import { supabase } from './lib/supabase';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 // --- Components ---
 
@@ -415,6 +417,99 @@ export default function App() {
       alert('Error al eliminar visita: ' + err.message);
     }
   };
+  const handleExportPDF = () => {
+    if (!selectedVisitForStatus) return;
+    
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 10;
+
+    // 1. Draw Border (Blue dark #001f3f)
+    doc.setDrawColor(0, 31, 63); // #001f3f
+    doc.setLineWidth(1.5);
+    doc.rect(margin, margin, pageWidth - (margin * 2), pageHeight - (margin * 2));
+
+    // 2. Main Title
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(22);
+    doc.setTextColor(0, 31, 63);
+    doc.text("VISITA TÉCNICA", pageWidth / 2, 25, { align: "center" });
+
+    // 3. Visit Details Table-like layout
+    doc.setFontSize(12);
+    doc.setTextColor(51, 65, 85); // slate-700
+    
+    const detailsY = 40;
+    doc.setFont("helvetica", "bold");
+    doc.text("DETALLES DE LA VISITA", margin + 10, detailsY);
+    doc.setLineWidth(0.5);
+    doc.line(margin + 10, detailsY + 2, margin + 80, detailsY + 2);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.text(`LUGAR / ESTADO:`, margin + 10, detailsY + 10);
+    doc.setFont("helvetica", "bold");
+    doc.text(`${selectedVisitForStatus.nombre}`, margin + 50, detailsY + 10);
+    
+    doc.setFont("helvetica", "normal");
+    doc.text(`FECHA:`, margin + 10, detailsY + 18);
+    doc.setFont("helvetica", "bold");
+    doc.text(`${selectedVisitForStatus.fecha}`, margin + 50, detailsY + 18);
+    
+    doc.setFont("helvetica", "normal");
+    doc.text(`HORARIO:`, margin + 10, detailsY + 26);
+    doc.setFont("helvetica", "bold");
+    doc.text(`${selectedVisitForStatus.horario}`, margin + 50, detailsY + 26);
+    
+    doc.setFont("helvetica", "normal");
+    doc.text(`CUPOS INSCRITOS:`, margin + 10, detailsY + 34);
+    doc.setFont("helvetica", "bold");
+    doc.text(`${enrolledStudents.length} / ${selectedVisitForStatus.cupos_max}`, margin + 50, detailsY + 34);
+
+    // 4. Students Table
+    const tableData = enrolledStudents.map(reg => [
+      reg.student?.nombre || reg.nombre_estudiante || '---',
+      reg.estudiante_registro,
+      reg.student?.carrera || '---',
+      reg.student?.celular || reg.student?.telefono || '---'
+    ]);
+
+    autoTable(doc, {
+      startY: detailsY + 45,
+      head: [['Estudiante', 'Registro', 'Carrera', 'Contacto']],
+      body: tableData,
+      margin: { left: margin + 10, right: margin + 10 },
+      styles: {
+        fontSize: 9,
+        cellPadding: 3,
+        font: "helvetica"
+      },
+      headStyles: {
+        fillColor: [0, 31, 63],
+        textColor: [255, 255, 255],
+        fontStyle: 'bold'
+      },
+      alternateRowStyles: {
+        fillColor: [248, 250, 252] // slate-50
+      },
+      theme: 'grid'
+    });
+
+    // 5. Footer
+    const footerY = pageHeight - 20;
+    doc.setFontSize(10);
+    doc.setTextColor(0, 31, 63);
+    doc.setFont("helvetica", "bold");
+    doc.text("Dirección de Carrera de Ingeniería Civil", pageWidth / 2, footerY - 5, { align: "center" });
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(100, 116, 139);
+    doc.text("72191068 Coordinación de Carrera | 72191592 Secretaría de Ingeniería Civil", pageWidth / 2, footerY, { align: "center" });
+
+    doc.save(`Inscritos_${selectedVisitForStatus.nombre.replace(/\s/g, '_')}.pdf`);
+  };
+
   const handleLogout = () => {
     setUserRole('guest');
     setLoginMode('select');
@@ -586,7 +681,7 @@ export default function App() {
                 <div className="p-4 bg-white rounded-3xl shadow-xl mb-6">
                   <Building2 className="w-12 h-12 text-[#001f3f]" />
                 </div>
-                <h1 className="text-4xl font-black text-center tracking-tight mb-2 uppercase text-white">UAGRM - FacuT</h1>
+                <h1 className="text-4xl font-black text-center tracking-tight mb-2 uppercase text-white">UAGRM - Carrera de Ingeniería Civil</h1>
                 <p className="text-indigo-200 font-medium text-center">Gestión de Visitas Técnicas</p>
               </div>
 
@@ -801,8 +896,8 @@ export default function App() {
             <div className="flex items-center gap-4">
               <Mail className="text-indigo-400" />
               <div>
-                <p className="text-xs font-black uppercase text-indigo-400 tracking-widest leading-none mb-1">Dpto. de Bienestar Estudiantil</p>
-                <p className="font-bold text-sm">¿Dudas? Contáctanos: bienestar.facut@uagrm.edu.bo</p>
+                <p className="text-xs font-black uppercase text-indigo-400 tracking-widest leading-none mb-1">Dirección de Carrera de Ingeniería Civil</p>
+                <p className="font-bold text-sm">72191068 Coordinación de Carrera | 72191592 Secretaría de Ingeniería Civil</p>
               </div>
             </div>
             <div className="px-6 py-2 bg-white/10 rounded-2xl border border-white/20 text-xs font-mono">APP_VERSION: 2.1.0-STABLE</div>
@@ -1369,22 +1464,12 @@ export default function App() {
 
                         <div className="mt-8 flex justify-end gap-4">
                           <button 
-                            onClick={() => {
-                              const csvContent = "data:text/csv;charset=utf-8," 
-                                + "Nombre,Registro,Carrera,Celular\n"
-                                + enrolledStudents.map(e => `${e.student?.nombre || e.nombre_estudiante},${e.estudiante_registro},${e.student?.carrera},${e.student?.celular || e.student?.telefono}`).join("\n");
-                              const encodedUri = encodeURI(csvContent);
-                              const link = document.createElement("a");
-                              link.setAttribute("href", encodedUri);
-                              link.setAttribute("download", `Inscritos_${selectedVisitForStatus.nombre.replace(/\s/g, '_')}.csv`);
-                              document.body.appendChild(link);
-                              link.click();
-                            }}
+                            onClick={handleExportPDF}
                             disabled={enrolledStudents.length === 0}
                             className="bg-indigo-600 text-white px-8 h-14 rounded-2xl font-black shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all flex items-center gap-2 disabled:opacity-50 disabled:grayscale"
                           >
-                            <Download size={20}/>
-                            Exportar CSV
+                            <FileText size={20}/>
+                            Exportar PDF
                           </button>
                         </div>
                       </motion.div>
