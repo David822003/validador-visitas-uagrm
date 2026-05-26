@@ -382,18 +382,40 @@ export default function App() {
       };
 
       if (editingVisit) {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('visitas')
           .update(payload)
-          .eq('id', editingVisit.id);
+          .eq('id', editingVisit.id)
+          .select();
+        
         if (error) throw error;
+
+        // Update local state immediately for instant UI response
+        if (data && data.length > 0) {
+          setAvailableVisits(prev => prev.map(v => v.id === editingVisit.id ? data[0] : v));
+        } else {
+          setAvailableVisits(prev => prev.map(v => v.id === editingVisit.id ? { ...v, ...payload } as any : v));
+        }
       } else {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('visitas')
-          .insert([payload]);
+          .insert([payload])
+          .select();
+        
         if (error) throw error;
+
+        // Insert in local state immediately
+        if (data && data.length > 0) {
+          setAvailableVisits(prev => [...prev, data[0]]);
+        }
       }
+
+      // Re-fetch from DB to ensure perfect consistency
       await fetchVisits();
+      if (userRole === 'admin') {
+        await fetchAllRegistrations();
+      }
+
       handleResetVisitForm();
       alert('Visita guardada correctamente');
     } catch (err: any) {
