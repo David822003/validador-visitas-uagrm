@@ -14,35 +14,94 @@ import autoTable from 'jspdf-autotable';
 
 // --- Components ---
 
+function CEICBackground() {
+  return (
+    <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+      {/* Blueprint Grid - Architectural Drafting Grid Background */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,0.03)_1px,transparent_1px)] bg-[size:40px_40px]" />
+
+      {/* Wave Accent 1 - Deep Emerald/Teal Blur */}
+      <div className="absolute -bottom-48 -left-48 w-[600px] h-[600px] rounded-full bg-gradient-to-tr from-emerald-600/15 via-[#012621]/15 to-transparent blur-3xl" />
+      
+      {/* Wave Accent 2 - Ribbon flow mimicking the bottom wavy bands in gold/amber */}
+      <div className="absolute -bottom-16 -right-12 w-[900px] h-[350px] rounded-full bg-gradient-to-l from-amber-500/10 via-[#c49a3c]/5 to-transparent/0 rotate-[-10deg] blur-2xl border-t border-amber-500/10" />
+      
+      {/* Top Banner Ribbon styling accent */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full bg-gradient-to-bl from-emerald-700/10 to-transparent blur-3xl pointer-events-none" />
+      
+      {/* Decorative Golden Orbit Curves from the 58th anniversary CEIC graphical brand */}
+      <div className="absolute top-24 -right-24 w-80 h-80 rounded-full border-2 border-dashed border-amber-500/5 animate-[spin_120s_linear_infinite]" />
+      <div className="absolute top-28 -right-20 w-[290px] h-[290px] rounded-full border border-emerald-400/10 rotate-45" />
+
+      {/* SVG Structural Bridge Relief (Right corner) */}
+      <svg className="absolute bottom-0 right-10 w-[600px] h-[300px] text-emerald-400/5 pointer-events-none" viewBox="0 0 600 300" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <path d="M 50 250 L 550 250 M 50 150 L 550 150" />
+        <path d="M 50 250 L 50 150 L 150 250 L 150 150 L 250 250 L 250 150 L 350 250 L 350 150 L 450 250 L 450 150 L 550 250 L 550 150" />
+        <path d="M 50 150 L 150 250 M 150 150 L 250 250 M 250 150 L 350 250 M 350 150 L 450 250 M 450 150 L 550 250" />
+        <path d="M 150 150 L 50 250 M 250 150 L 150 250 M 350 150 L 250 250 M 450 150 L 350 250 M 550 150 L 450 250" />
+        <path d="M 50 250 L 50 280 M 150 250 L 150 280 M 250 250 L 250 280 M 350 250 L 350 280 M 450 250 L 450 280 M 550 250 L 550 280" />
+      </svg>
+
+      {/* SVG Skyscrapers and Architect blueprint mockup (Left corner) */}
+      <svg className="absolute bottom-10 left-10 w-[400px] h-[400px] text-emerald-400/4 pointer-events-none" viewBox="0 0 400 400" fill="none" stroke="currentColor" strokeWidth="1.2">
+        <line x1="50" y1="50" x2="350" y2="50" strokeDasharray="3 3"/>
+        <line x1="50" y1="150" x2="350" y2="150" strokeDasharray="3 3"/>
+        <line x1="50" y1="250" x2="350" y2="250" strokeDasharray="3 3"/>
+        <line x1="50" y1="50" x2="50" y2="350" strokeDasharray="3 3"/>
+        <line x1="150" y1="50" x2="150" y2="350" strokeDasharray="3 3"/>
+        <line x1="250" y1="50" x2="250" y2="350" strokeDasharray="3 3"/>
+        <rect x="80" y="100" width="80" height="250" />
+        <rect x="200" y="150" width="100" height="200" />
+        <circle cx="250" cy="150" r="30" strokeDasharray="5 5" />
+        <line x1="120" y1="100" x2="120" y2="350" />
+        <line x1="250" y1="180" x2="250" y2="350" />
+        <path d="M 80 120 L 160 120 M 80 140 L 160 140 M 80 160 L 160 160 M 80 180 L 160 180" />
+        <path d="M 200 170 L 300 170 M 200 190 L 300 190 M 200 210 L 300 210" />
+      </svg>
+
+      {/* Subtle organic green stripes in bottom corners */}
+      <div className="absolute bottom-4 left-1/4 w-[400px] h-[100px] bg-emerald-500/5 rounded-full blur-[90px] rotate-12" />
+    </div>
+  );
+}
+
 function StudentTable({ data, sticky = false }: { data: DatabaseStudent[], sticky?: boolean }) {
   return (
-    <div className={`overflow-auto border border-slate-50 rounded-2xl ${sticky ? 'max-h-[600px]' : 'max-h-[400px]'}`}>
+    <div className={`overflow-auto border border-emerald-500/10 rounded-2xl ${sticky ? 'max-h-[600px]' : 'max-h-[400px]'} bg-slate-950/40 backdrop-blur-md`}>
       <table className="w-full text-left text-xs border-collapse">
         <thead className={sticky ? 'sticky top-0 z-10' : ''}>
-          <tr className="bg-slate-50/80 backdrop-blur border-b border-slate-100">
-            <th className="p-4 font-black uppercase tracking-widest text-slate-400">Reg</th>
-            <th className="p-4 font-black uppercase tracking-widest text-slate-400">Nombre</th>
-            <th className="p-4 font-black uppercase tracking-widest text-slate-400 text-center">Niv</th>
-            <th className="p-4 font-black uppercase tracking-widest text-slate-400">CI</th>
-            <th className="p-4 font-black uppercase tracking-widest text-slate-400">Celular</th>
-            <th className="p-4 font-black uppercase tracking-widest text-slate-400">Correo</th>
-            <th className="p-4 font-black uppercase tracking-widest text-slate-400">Lugar</th>
+          <tr className="bg-[#021c17] backdrop-blur border-b border-emerald-500/15">
+            <th className="p-4 font-black uppercase tracking-widest text-emerald-300">Reg</th>
+            <th className="p-4 font-black uppercase tracking-widest text-emerald-100">Nombre</th>
+            <th className="p-4 font-black uppercase tracking-widest text-emerald-300 text-center">Niv</th>
+            <th className="p-4 font-black uppercase tracking-widest text-emerald-300">CI</th>
+            <th className="p-4 font-black uppercase tracking-widest text-emerald-300">Celular</th>
+            <th className="p-4 font-black uppercase tracking-widest text-emerald-300">Correo</th>
+            <th className="p-4 font-black uppercase tracking-widest text-emerald-300">Lugar</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-50 bg-white/50">
+        <tbody className="divide-y divide-emerald-900/20 bg-emerald-950/10">
           {data.slice(0, 100).map(s => (
-            <tr key={s.registro} className="hover:bg-white transition-colors">
-              <td className="p-4 font-mono font-bold text-slate-600">{s.registro}</td>
-              <td className="p-4 font-bold text-slate-800">{s.nombre}</td>
-              <td className="p-4 text-center"><span className="px-2 py-1 bg-indigo-50 text-indigo-600 rounded-md font-bold">{s.niv || s.nivel || s.semestre_activo?.split('-')[0] || '---'}</span></td>
-              <td className="p-4 text-slate-500 font-mono">{s.ci || '---'}</td>
-              <td className="p-4 text-slate-800 font-bold">{s.celular || '---'}</td>
-              <td className="p-4 text-indigo-500 font-medium">{s.correo || '---'}</td>
-              <td className="p-4 text-slate-400 italic truncate max-w-[200px]">{s.lugar || '---'}</td>
+            <tr key={s.registro} className="hover:bg-emerald-900/20 transition-colors">
+              <td className="p-4 font-mono font-bold text-amber-400">{s.registro}</td>
+              <td className="p-4 font-bold text-white">{s.nombre}</td>
+              <td className="p-4 text-center">
+                <span className="px-2 py-1 bg-emerald-950 text-emerald-300 border border-emerald-500/20 rounded-md font-bold text-[10px]">
+                  {s.niv || s.nivel || s.semestre_activo?.split('-')[0] || '---'}
+                </span>
+              </td>
+              <td className="p-4 text-emerald-100/75 font-mono">{s.ci || '---'}</td>
+              <td className="p-4 text-emerald-50 font-bold">{s.celular || '---'}</td>
+              <td className="p-4 text-emerald-300 font-medium">{s.correo || '---'}</td>
+              <td className="p-4 text-emerald-200/50 italic truncate max-w-[200px]">{s.lugar || '---'}</td>
             </tr>
           ))}
           {data.length > 100 && (
-            <tr><td colSpan={7} className="p-4 text-center text-slate-400 bg-slate-50/30">Mostrando solo los primeros 100 para rendimiento...</td></tr>
+            <tr>
+              <td colSpan={7} className="p-4 text-center text-emerald-400/60 bg-[#001410]/50">
+                Mostrando solo los primeros 100 para rendimiento...
+              </td>
+            </tr>
           )}
         </tbody>
       </table>
@@ -802,7 +861,9 @@ export default function App() {
 
   if (userRole === 'guest') {
     return (
-      <div className="min-h-screen bg-[#001f3f] flex flex-col items-center justify-center p-6 text-white font-sans overflow-hidden">
+      <div className="min-h-screen bg-gradient-to-br from-green-950 via-emerald-900 to-teal-950 flex flex-col items-center justify-center p-6 text-white font-sans overflow-hidden relative">
+        <CEICBackground />
+        
         <AnimatePresence mode="wait">
           {loginMode === 'select' ? (
             <motion.div 
@@ -810,43 +871,43 @@ export default function App() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="max-w-2xl w-full grid grid-cols-1 md:grid-cols-2 gap-8"
+              className="max-w-2xl w-full grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10"
             >
               <div className="md:col-span-2 flex flex-col items-center mb-6">
-                <div className="p-4 bg-white rounded-3xl shadow-xl mb-6">
-                  <Building2 className="w-12 h-12 text-[#001f3f]" />
+                <div className="p-4 bg-gradient-to-br from-amber-400 to-amber-600 rounded-3xl shadow-xl shadow-amber-900/30 mb-6 border border-amber-300/30">
+                  <Building2 className="w-12 h-12 text-[#021c17]" />
                 </div>
                 <h1 className="text-4xl font-black text-center tracking-tight mb-2 uppercase text-white">UAGRM - Carrera de Ingeniería Civil</h1>
-                <p className="text-indigo-200 font-medium text-center">Gestión de Visitas Técnicas</p>
+                <p className="text-emerald-300 font-extrabold text-center tracking-wide uppercase text-sm">CONGRESO DE ESTUDIANTES - GESTIÓN DE VISITAS TÉCNICAS</p>
               </div>
 
               <motion.button 
-                whileHover={{ scale: 1.05 }}
+                whileHover={{ scale: 1.05, borderColor: 'rgba(245, 158, 11, 0.4)' }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setLoginMode('student')}
-                className="bg-white/10 backdrop-blur-md border border-white/20 p-10 rounded-[2.5rem] flex flex-col items-center gap-6 hover:bg-white/20 transition-all group"
+                className="bg-slate-900/40 backdrop-blur-md border border-emerald-500/20 p-10 rounded-[2.5rem] flex flex-col items-center gap-6 hover:bg-slate-900/60 transition-all group shadow-2xl"
               >
-                <div className="w-24 h-24 rounded-full bg-white flex items-center justify-center shadow-2xl group-hover:bg-indigo-50 transition-colors">
-                  <GraduationCap className="w-12 h-12 text-[#001f3f]" />
+                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center shadow-2xl group-hover:from-emerald-400 group-hover:to-teal-600 transition-colors border border-emerald-400/20">
+                  <GraduationCap className="w-12 h-12 text-white" />
                 </div>
                 <div className="text-center">
-                  <h2 className="text-2xl font-black mb-2">Estudiantes</h2>
-                  <p className="text-indigo-200 text-sm font-medium">Inscripción y gestión de visitas</p>
+                  <h2 className="text-2xl font-black mb-2 text-white group-hover:text-amber-400 transition-colors">Estudiantes</h2>
+                  <p className="text-emerald-200/70 text-sm font-medium">Inscripción y gestión de visitas</p>
                 </div>
               </motion.button>
 
               <motion.button 
-                whileHover={{ scale: 1.05 }}
+                whileHover={{ scale: 1.05, borderColor: 'rgba(245, 158, 11, 0.4)' }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setLoginMode('admin')}
-                className="bg-white/10 backdrop-blur-md border border-white/20 p-10 rounded-[2.5rem] flex flex-col items-center gap-6 hover:bg-white/20 transition-all group"
+                className="bg-slate-900/40 backdrop-blur-md border border-emerald-500/20 p-10 rounded-[2.5rem] flex flex-col items-center gap-6 hover:bg-slate-900/60 transition-all group shadow-2xl"
               >
-                <div className="w-24 h-24 rounded-full bg-indigo-600 flex items-center justify-center shadow-2xl group-hover:bg-indigo-500 transition-colors">
-                  <ShieldCheck className="w-12 h-12 text-white" />
+                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-2xl group-hover:from-amber-300 group-hover:to-amber-500 transition-colors border border-amber-300/20">
+                  <ShieldCheck className="w-12 h-12 text-teal-950" />
                 </div>
                 <div className="text-center">
-                  <h2 className="text-2xl font-black mb-2">Administración</h2>
-                  <p className="text-indigo-200 text-sm font-medium">Panel de control y reportes</p>
+                  <h2 className="text-2xl font-black mb-2 text-white group-hover:text-amber-400 transition-colors">Administración</h2>
+                  <p className="text-emerald-200/70 text-sm font-medium">Panel de control y reportes</p>
                 </div>
               </motion.button>
             </motion.div>
@@ -856,54 +917,54 @@ export default function App() {
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -50 }}
-              className="max-w-md w-full bg-white text-slate-900 p-10 rounded-[2.5rem] shadow-2xl relative"
+              className="max-w-md w-full bg-[#03241f]/75 backdrop-blur-xl text-white p-10 rounded-[2.5rem] shadow-2xl border border-emerald-500/20 relative z-10"
             >
               <button 
                 onClick={() => { setLoginMode('select'); setLoginError(''); }}
-                className="absolute top-8 left-8 text-slate-400 hover:text-[#001f3f] transition-colors"
+                className="absolute top-8 left-8 text-emerald-300 hover:text-amber-400 transition-colors"
                 title="Volver"
               >
                 <ArrowLeft size={24} />
               </button>
 
               <div className="flex flex-col items-center mb-8 pt-4">
-                <div className="p-4 bg-[#001f3f] rounded-2xl shadow-lg mb-4 text-white">
+                <div className="p-4 bg-gradient-to-br from-emerald-500 to-teal-800 rounded-2xl shadow-lg border border-emerald-400/20 mb-4 text-white">
                   {loginMode === 'student' ? <GraduationCap size={32}/> : <ShieldCheck size={32}/>}
                 </div>
-                <h2 className="text-2xl font-black text-[#001f3f]">Acceso {loginMode === 'student' ? 'Estudiante' : 'Administrador'}</h2>
-                <p className="text-slate-400 text-sm font-medium">Ingrese sus credenciales para continuar</p>
+                <h2 className="text-2xl font-black text-white">Acceso {loginMode === 'student' ? 'Estudiante' : 'Administrador'}</h2>
+                <p className="text-emerald-200/60 text-sm font-medium">Ingrese sus credenciales para continuar</p>
               </div>
 
               <form onSubmit={handleLogin} className="space-y-6">
                 {loginMode === 'admin' && (
                   <>
                     <div>
-                      <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest pl-2 mb-2 block">Usuario Administrador</label>
+                      <label className="text-[10px] font-black uppercase text-emerald-300 tracking-widest pl-2 mb-2 block font-black">Usuario Administrador</label>
                       <div className="relative">
-                        <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+                        <User className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-400/60 w-5 h-5" />
                         <input 
                           type="text" 
                           value={adminUser}
                           onChange={(e) => setAdminUser(e.target.value)}
                           placeholder="Ej: admin"
-                          className="w-full h-14 bg-slate-50 border-2 border-slate-100 focus:border-[#001f3f] focus:ring-4 focus:ring-indigo-100 rounded-2xl pl-12 outline-none transition-all placeholder:text-slate-300 font-bold"
+                          className="w-full h-14 bg-[#011412]/60 border-2 border-emerald-500/15 focus:border-amber-400 focus:ring-4 focus:ring-amber-500/10 text-white placeholder:text-emerald-800 rounded-2xl pl-12 outline-none transition-all font-bold shadow-inner"
                           required
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest pl-2 mb-2 block">
+                      <label className="text-[10px] font-black uppercase text-emerald-300 tracking-widest pl-2 mb-2 block font-black">
                         Contraseña
                       </label>
                       <div className="relative">
-                        <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+                        <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-400/60 w-5 h-5" />
                         <input 
                           type="password" 
                           value={loginPass}
                           onChange={(e) => setLoginPass(e.target.value)}
                           placeholder="Contraseña de acceso"
-                          className="w-full h-14 bg-slate-50 border-2 border-slate-100 focus:border-[#001f3f] focus:ring-4 focus:ring-indigo-100 rounded-2xl pl-12 outline-none transition-all placeholder:text-slate-300 font-bold"
+                          className="w-full h-14 bg-[#011412]/60 border-2 border-emerald-500/15 focus:border-amber-400 focus:ring-4 focus:ring-amber-500/10 text-white placeholder:text-emerald-800 rounded-2xl pl-12 outline-none transition-all font-bold shadow-inner"
                           required
                         />
                       </div>
@@ -914,30 +975,30 @@ export default function App() {
                 {loginMode === 'student' && (
                   <>
                     <div>
-                      <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest pl-2 mb-2 block">Usuario (Registro o Ticket)</label>
+                      <label className="text-[10px] font-black uppercase text-emerald-300 tracking-widest pl-2 mb-2 block font-black">Usuario (Registro o Ticket)</label>
                       <div className="relative">
-                        <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+                        <User className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-400/60 w-5 h-5" />
                         <input 
                           type="text" 
                           value={loginId}
                           onChange={(e) => setLoginId(e.target.value)}
-                          placeholder="Ingrese su Registro o Número de Ticket"
-                          className="w-full h-14 bg-slate-50 border-2 border-slate-100 focus:border-[#001f3f] focus:ring-4 focus:ring-indigo-100 rounded-2xl pl-12 outline-none transition-all placeholder:text-slate-300 font-bold"
+                          placeholder="Ingrese su Registro o Ticket"
+                          className="w-full h-14 bg-[#011412]/60 border-2 border-emerald-500/15 focus:border-amber-400 focus:ring-4 focus:ring-amber-500/10 text-white placeholder:text-emerald-800 rounded-2xl pl-12 outline-none transition-all font-bold shadow-inner"
                           required
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest pl-2 mb-2 block">Contraseña (Cédula de Identidad)</label>
+                      <label className="text-[10px] font-black uppercase text-emerald-300 tracking-widest pl-2 mb-2 block font-black">Contraseña (Cédula de Identidad)</label>
                       <div className="relative">
-                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-400/60 w-5 h-5" />
                         <input 
                           type="password" 
                           value={loginPass}
                           onChange={(e) => setLoginPass(e.target.value)}
                           placeholder="Ingrese su Cédula de Identidad"
-                          className="w-full h-14 bg-slate-50 border-2 border-slate-100 focus:border-[#001f3f] focus:ring-4 focus:ring-indigo-100 rounded-2xl pl-12 outline-none transition-all placeholder:text-slate-300 font-bold"
+                          className="w-full h-14 bg-[#011412]/60 border-2 border-emerald-500/15 focus:border-amber-400 focus:ring-4 focus:ring-amber-500/10 text-white placeholder:text-emerald-800 rounded-2xl pl-12 outline-none transition-all font-bold shadow-inner"
                           required
                         />
                       </div>
@@ -945,9 +1006,9 @@ export default function App() {
                   </>
                 )}
 
-                {loginError && <p className="text-rose-500 text-xs font-black text-center bg-rose-50 p-3 rounded-xl border border-rose-100">{loginError}</p>}
+                {loginError && <p className="text-rose-300 text-xs font-black text-center bg-rose-950/45 p-3 rounded-xl border border-rose-500/20">{loginError}</p>}
 
-                <button disabled={isLoggingIn} type="submit" className="w-full h-16 bg-[#001f3f] text-white rounded-2xl font-black text-lg hover:bg-[#002f5f] transition-all flex items-center justify-center gap-2 transform active:scale-95 shadow-xl disabled:opacity-50">
+                <button disabled={isLoggingIn} type="submit" className="w-full h-16 bg-gradient-to-r from-amber-500 to-amber-600 text-[#011a16] rounded-2xl font-black text-lg hover:from-amber-400 hover:to-amber-500 transition-all flex items-center justify-center gap-2 transform active:scale-95 shadow-xl shadow-amber-950/40 disabled:opacity-50">
                   {isLoggingIn ? <Loader2 className="animate-spin" /> : "INGRESAR AL SISTEMA"}
                 </button>
               </form>
@@ -962,37 +1023,39 @@ export default function App() {
     const studentLvl = currentStudent?.niv || parseInt(currentStudent?.semestre_activo?.split('-')[0]) || 0;
     
     return (
-      <div className="min-h-screen bg-slate-50 font-sans p-4 md:p-8">
-        <div className="max-w-5xl mx-auto">
+      <div className="min-h-screen bg-gradient-to-br from-green-950 via-emerald-900 to-teal-950 font-sans p-4 md:p-8 text-white relative overflow-hidden">
+        <CEICBackground />
+        
+        <div className="max-w-5xl mx-auto relative z-10">
           <header className="flex justify-between items-center mb-12">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-indigo-600 rounded-xl text-white shadow-lg"><Building2 size={24}/></div>
-              <h1 className="text-xl font-black text-slate-800 uppercase tracking-tighter">Portal Estudiante</h1>
+              <div className="p-2 bg-gradient-to-br from-emerald-500 to-teal-700 rounded-xl text-white shadow-lg border border-emerald-400/25"><Building2 size={24}/></div>
+              <h1 className="text-xl font-black text-white uppercase tracking-tighter">Portal Estudiante</h1>
             </div>
-            <button onClick={handleLogout} className="flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 rounded-xl font-bold text-slate-600 hover:text-rose-500 hover:border-rose-100 transition-all shadow-sm">
+            <button onClick={handleLogout} className="flex items-center gap-2 px-5 py-2.5 bg-slate-900/40 border border-emerald-500/20 hover:border-rose-500/30 rounded-xl font-extrabold text-emerald-100 hover:text-rose-400 backdrop-blur-md transition-all">
               <LogOut size={18}/> Salir
             </button>
           </header>
 
-          <div className="bg-white rounded-[2.5rem] p-8 md:p-12 shadow-2xl shadow-indigo-100 border border-slate-100 mb-10 overflow-hidden relative">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50 rounded-full blur-3xl -mr-20 -mt-20 opacity-50"></div>
+          <div className="bg-[#03241f]/50 backdrop-blur-md rounded-[2.5rem] p-8 md:p-12 shadow-2xl border border-emerald-500/20 mb-10 overflow-hidden relative">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-950/40 rounded-full blur-3xl -mr-20 -mt-20 opacity-30 border border-emerald-500/10 pointer-events-none"></div>
             <div className="flex flex-col md:flex-row gap-8 items-center mb-10 relative z-10">
-              <div className="w-24 h-24 rounded-3xl bg-indigo-600 flex items-center justify-center text-white shadow-2xl shadow-indigo-200"><User size={48} /></div>
+              <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-800 flex items-center justify-center text-white shadow-2xl shadow-emerald-950/40 border border-emerald-400/30"><User size={48} /></div>
               <div className="text-center md:text-left">
-                <h2 className="text-3xl font-black text-slate-800 capitalize leading-tight mb-2">{currentStudent?.nombre.toLowerCase()}</h2>
+                <h2 className="text-3xl font-black text-white capitalize leading-tight mb-2">{currentStudent?.nombre.toLowerCase()}</h2>
                 <div className="flex flex-wrap justify-center md:justify-start gap-4">
-                  <span className="px-4 py-1.5 bg-indigo-50 text-indigo-600 rounded-xl font-black text-xs uppercase tracking-widest">REG: {currentStudent?.registro}</span>
+                  <span className="px-4 py-1.5 bg-emerald-950 text-emerald-300 border border-emerald-500/30 rounded-xl font-black text-xs uppercase tracking-widest">REG: {currentStudent?.registro}</span>
                   {currentStudent?.isExternal ? (
-                    <span className="px-4 py-1.5 bg-amber-50 text-amber-600 rounded-xl font-black text-xs uppercase tracking-widest">Estudiante Externo</span>
+                    <span className="px-4 py-1.5 bg-amber-950/60 text-amber-400 border border-amber-500/20 rounded-xl font-black text-xs uppercase tracking-widest">Estudiante Externo</span>
                   ) : (
-                    <span className="px-4 py-1.5 bg-emerald-50 text-emerald-600 rounded-xl font-black text-xs uppercase tracking-widest">SEMESTRE: {currentStudent?.niv !== undefined ? currentStudent.niv : studentLvl}</span>
+                    <span className="px-4 py-1.5 bg-emerald-950/80 text-emerald-400 border border-emerald-500/20 rounded-xl font-black text-xs uppercase tracking-widest">SEMESTRE: {currentStudent?.niv !== undefined ? currentStudent.niv : studentLvl}</span>
                   )}
                 </div>
               </div>
             </div>
 
-            <h3 className="text-xl font-black text-slate-800 mb-8 flex items-center gap-3">
-              <Calendar className="text-indigo-600" /> Próximas Visitas Técnicas
+            <h3 className="text-xl font-black text-white mb-8 flex items-center gap-3">
+              <Calendar className="text-amber-400" /> Próximas Visitas Técnicas
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -1001,38 +1064,41 @@ export default function App() {
                 const isRegistered = myRegistrations.includes(visit.id);
                 
                 return (
-                  <div key={visit.id} className={`group p-6 rounded-[2rem] border-2 transition-all relative overflow-hidden ${isRegistered ? 'bg-emerald-50 border-emerald-200' : isEligible ? 'bg-white border-slate-100 hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-50' : 'bg-slate-50 border-slate-100'}`}>
+                  <div key={visit.id} className={`group p-6 rounded-[2rem] border-2 transition-all relative overflow-hidden flex flex-col justify-between ${isRegistered ? 'bg-emerald-950/40 border-emerald-400/50 shadow-lg shadow-emerald-950/30' : isEligible ? 'bg-slate-950/40 hover:bg-slate-950/50 backdrop-blur-md border-emerald-500/15 hover:border-amber-500/30' : 'bg-slate-950/20 border-emerald-900/10 opacity-70'}`}>
                     {!isEligible && !isRegistered && (
-                      <div className="absolute inset-0 bg-slate-900/5 backdrop-blur-[1px] flex items-center justify-center z-20">
-                        <div className="bg-white/90 p-4 rounded-3xl shadow-2xl border border-slate-200 flex flex-col items-center gap-2 scale-90 md:scale-100">
-                          <div className="p-3 bg-rose-100 text-rose-600 rounded-2xl">
-                            <Lock size={28}/>
+                      <div className="absolute inset-0 bg-slate-950/45 backdrop-blur-[1.5px] flex items-center justify-center z-25">
+                        <div className="bg-[#011a16]/95 p-4 rounded-3xl shadow-2xl border border-rose-500/25 flex flex-col items-center gap-2 scale-90 md:scale-100">
+                          <div className="p-3 bg-rose-950 text-rose-400 rounded-2xl border border-rose-500/20">
+                            <Lock size={22}/>
                           </div>
-                          <span className="text-[10px] font-black text-rose-700 uppercase tracking-widest text-center">Nivel insuficiente<br/>(Mínimo: {visit.min_nivel})</span>
+                          <span className="text-[9px] font-black text-rose-300 uppercase tracking-widest text-center leading-normal">Semestre Insuficiente<br/>(Requerido: Nivel {visit.min_nivel})</span>
                         </div>
                       </div>
                     )}
 
-                    <div className="flex justify-between items-start mb-6">
-                      <div className={`p-3 rounded-2xl ${isRegistered ? 'bg-emerald-500/10 text-emerald-600' : 'bg-indigo-500/10 text-indigo-600'}`}>
-                        {isRegistered ? <CheckCircle2 size={24}/> : <Calendar size={24}/>}
+                    <div>
+                      <div className="flex justify-between items-start mb-6">
+                        <div className={`p-3 rounded-2xl ${isRegistered ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-400/20' : 'bg-emerald-500/10 text-emerald-300'}`}>
+                          {isRegistered ? <CheckCircle2 size={24}/> : <Calendar size={24}/>}
+                        </div>
+                        <span className={`text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest ${isEligible ? 'bg-emerald-900/40 text-amber-400 border border-amber-500/15' : 'bg-rose-950 text-rose-300 border border-rose-500/15'}`}>
+                          Min Lvl {visit.min_nivel}
+                        </span>
                       </div>
-                      <span className={`text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-tighter ${isEligible ? 'bg-indigo-100 text-[#001f3f]' : 'bg-rose-100 text-rose-700'}`}>
-                        Mín Lvl {visit.min_nivel}
-                      </span>
-                    </div>
 
-                    <h4 className="font-bold text-slate-800 mb-2 leading-snug">{visit.nombre}</h4>
-                    <p className="text-slate-500 text-xs mb-6 line-clamp-2">{visit.descripcion}</p>
+                      <h4 className="font-extrabold text-white mb-2 leading-snug text-base">{visit.nombre}</h4>
+                      <p className="text-emerald-200/50 text-xs mb-6 line-clamp-2">{visit.descripcion}</p>
+                    </div>
                     
-                    <div className="flex items-center justify-between mt-auto">
+                    <div className="flex items-center justify-between mt-auto pt-4 border-t border-emerald-500/10">
                       <div className="flex flex-col">
-                        <span className="text-xs font-black text-slate-400">{new Date(visit.fecha).toLocaleDateString()}</span>
-                        {visit.horario && <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-tighter">{visit.horario}</span>}
+                        <span className="text-xs font-black text-emerald-300">{new Date(visit.fecha).toLocaleDateString()}</span>
+                        {visit.horario && <span className="text-[10px] font-black text-amber-400 uppercase tracking-tight">{visit.horario}</span>}
                       </div>
+                      
                       {isRegistered ? (
                         <div className="flex flex-col items-end gap-1.5">
-                          <div className="flex items-center gap-1 text-emerald-600 font-black text-xs">
+                          <div className="flex items-center gap-1 text-emerald-400 font-black text-xs">
                             <Check size={14}/> INSCRITO
                           </div>
                           <button
@@ -1041,20 +1107,20 @@ export default function App() {
                               setCancelReason('');
                               setRegError('');
                             }}
-                            className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-100 font-extrabold rounded-xl text-[10px] uppercase tracking-wider transition-colors shadow-sm"
+                            className="px-3 py-1.5 bg-rose-950/40 hover:bg-rose-950/60 text-rose-300 border border-rose-500/25 font-extrabold rounded-xl text-[10px] uppercase tracking-wider transition-colors shadow-sm"
                           >
                             Anular Inscripción
                           </button>
                         </div>
                       ) : canceledRegistrations.includes(visit.id) ? (
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 text-rose-600 border border-rose-100 rounded-xl font-black text-[10px] uppercase tracking-wider">
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-950 text-rose-300 border border-rose-500/20 rounded-xl font-black text-[10px] uppercase tracking-wider">
                           <XCircle size={12}/> Inscripción Anulada
                         </div>
                       ) : (
                         <button 
                           disabled={!isEligible || isBooking === visit.id}
                           onClick={() => handleRegisterForVisit(visit.id)}
-                          className={`px-4 py-2 rounded-xl text-xs font-black transition-all ${isEligible ? 'bg-[#001f3f] text-white hover:bg-[#002f5f] shadow-lg shadow-indigo-100' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}
+                          className={`px-4 py-2 rounded-xl text-xs font-black transition-all ${isEligible ? 'bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white shadow-lg shadow-emerald-950/50' : 'bg-slate-800 text-slate-500 cursor-not-allowed'}`}
                         >
                           {isBooking === visit.id ? <Loader2 className="animate-spin w-4 h-4" /> : "Iniciar Inscripción"}
                         </button>
@@ -1066,15 +1132,15 @@ export default function App() {
             </div>
           </div>
           
-          <div className="p-8 bg-indigo-900 rounded-3xl text-white flex flex-col md:flex-row items-center gap-6 justify-between border border-white/10">
+          <div className="p-8 bg-gradient-to-r from-[#022c22] to-teal-950 rounded-3xl text-white flex flex-col md:flex-row items-center gap-6 justify-between border border-emerald-500/20 shadow-xl shadow-slate-950/30">
             <div className="flex items-center gap-4">
-              <Mail className="text-indigo-400" />
+              <Mail className="text-amber-400" />
               <div>
-                <p className="text-xs font-black uppercase text-indigo-400 tracking-widest leading-none mb-1">Dirección de Carrera de Ingeniería Civil</p>
-                <p className="font-bold text-sm">72191068 Coordinación de Carrera | 72191592 Secretaría de Ingeniería Civil</p>
+                <p className="text-xs font-black uppercase text-emerald-400 tracking-widest leading-none mb-1">Dirección de Carrera de Ingeniería Civil</p>
+                <p className="font-bold text-sm text-slate-200">72191068 Coordinación de Carrera | 72191592 Secretaría de Ingeniería Civil</p>
               </div>
             </div>
-            <div className="px-6 py-2 bg-white/10 rounded-2xl border border-white/20 text-xs font-mono">APP_VERSION: 2.1.0-STABLE</div>
+            <div className="px-6 py-2 bg-emerald-950/60 rounded-2xl border border-emerald-500/20 text-xs font-mono text-emerald-300">APP_VERSION: 2.1.0-STABLE</div>
           </div>
 
           <AnimatePresence>
@@ -1083,57 +1149,57 @@ export default function App() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-[#001f3f]/80 backdrop-blur-xl z-[100] flex items-center justify-center p-0 md:p-8 overflow-y-auto"
+                className="fixed inset-0 bg-slate-950/80 backdrop-blur-xl z-[100] flex items-center justify-center p-0 md:p-8 overflow-y-auto"
               >
                 <motion.div 
-                  initial={{ scale: 0.95, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0.95, opacity: 0 }}
-                  className="bg-white rounded-none md:rounded-[3rem] w-full max-w-5xl min-h-screen md:min-h-0 shadow-2xl relative overflow-hidden flex flex-col md:flex-row"
+                   initial={{ scale: 0.95, opacity: 0 }}
+                   animate={{ scale: 1, opacity: 1 }}
+                   exit={{ scale: 0.95, opacity: 0 }}
+                   className="bg-[#021c17] text-white rounded-none md:rounded-[3rem] w-full max-w-5xl min-h-screen md:min-h-0 shadow-2xl relative overflow-hidden flex flex-col md:flex-row border border-emerald-500/10"
                 >
                   {/* Left Sidebar - Steps Indicator */}
-                  <div className="w-full md:w-80 bg-slate-50 p-8 md:p-12 border-b md:border-b-0 md:border-r border-slate-100 flex flex-col">
+                  <div className="w-full md:w-80 bg-[#011411] p-8 md:p-12 border-b md:border-b-0 md:border-r border-emerald-950/40 flex flex-col">
                     <button 
                       onClick={() => setShowRegModal(null)}
-                      className="absolute top-8 left-8 p-2 bg-white text-slate-400 hover:text-rose-500 rounded-full shadow-sm hover:shadow-md transition-all z-[110]"
+                      className="absolute top-8 left-8 p-2 bg-[#022a22] text-emerald-300 hover:text-rose-400 rounded-full shadow-md border border-emerald-500/20 transition-all z-[110]"
                     >
                       <XCircle size={32} />
                     </button>
 
                     <div className="mt-12 flex-1">
-                      <div className="p-4 bg-indigo-600 w-fit rounded-2xl text-white shadow-xl mb-6">
+                      <div className="p-4 bg-gradient-to-br from-emerald-500 to-teal-800 w-fit rounded-2xl text-white shadow-xl border border-emerald-400/20 mb-6">
                         <ClipboardList size={32} />
                       </div>
-                      <h2 className="text-2xl font-black text-slate-800 leading-tight mb-2">Proceso de Inscripción</h2>
-                      <p className="text-slate-400 text-sm font-medium mb-12">{availableVisits.find(v => v.id === showRegModal)?.nombre}</p>
+                      <h2 className="text-2xl font-black text-white leading-tight mb-2">Inscripción Civil</h2>
+                      <p className="text-emerald-300 text-xs font-bold uppercase tracking-wider mb-12">{availableVisits.find(v => v.id === showRegModal)?.nombre}</p>
 
                       <div className="space-y-10">
                         <div className={`flex items-center gap-4 transition-all ${regStep === 1 ? 'scale-105' : 'opacity-40'}`}>
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black ${regStep === 1 ? 'bg-[#001f3f] text-white' : 'bg-slate-200 text-slate-500'}`}>1</div>
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black ${regStep === 1 ? 'bg-amber-500 text-teal-950' : 'bg-[#03241e] text-emerald-500 border border-emerald-900/30'}`}>1</div>
                           <div>
-                            <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest leading-none mb-1">Paso 1</p>
-                            <p className="font-bold text-slate-700">Seguro y EPP</p>
+                            <p className="text-[10px] font-black uppercase text-emerald-400 tracking-widest leading-none mb-1">Paso 1</p>
+                            <p className="font-bold text-white">Seguro y EPP</p>
                           </div>
                         </div>
                         <div className={`flex items-center gap-4 transition-all ${regStep === 2 ? 'scale-105' : 'opacity-40'}`}>
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black ${regStep === 2 ? 'bg-[#001f3f] text-white' : 'bg-slate-200 text-slate-500'}`}>2</div>
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black ${regStep === 2 ? 'bg-amber-500 text-teal-950' : 'bg-[#03241e] text-emerald-500 border border-emerald-900/30'}`}>2</div>
                           <div>
-                            <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest leading-none mb-1">Paso 2</p>
-                            <p className="font-bold text-slate-700">Salud y Contacto</p>
+                            <p className="text-[10px] font-black uppercase text-emerald-400 tracking-widest leading-none mb-1">Paso 2</p>
+                            <p className="font-bold text-white">Salud y Emergencia</p>
                           </div>
                         </div>
                       </div>
                     </div>
 
                     <div className="mt-auto pt-8">
-                       <button onClick={() => setShowRegModal(null)} className="text-xs font-black text-slate-400 hover:text-rose-500 uppercase tracking-widest flex items-center gap-2 transition-colors">
+                       <button onClick={() => setShowRegModal(null)} className="text-xs font-black text-emerald-400 hover:text-rose-400 uppercase tracking-widest flex items-center gap-2 transition-colors">
                           <XCircle size={14}/> Cancelar Inscripción
                        </button>
                     </div>
                   </div>
 
                   {/* Main Form Area */}
-                  <div className="flex-1 p-8 md:p-16 flex flex-col">
+                  <div className="flex-1 p-8 md:p-16 flex flex-col justify-between">
                     <AnimatePresence mode="wait">
                       {regStep === 1 ? (
                         <motion.div 
@@ -1141,79 +1207,81 @@ export default function App() {
                           initial={{ opacity: 0, x: 20 }} 
                           animate={{ opacity: 1, x: 0 }} 
                           exit={{ opacity: 0, x: -20 }}
-                          className="flex-1"
+                          className="flex-1 flex flex-col justify-between"
                         >
-                          <h3 className="text-4xl font-black text-slate-800 mb-4 tracking-tighter">Seguridad Industrial</h3>
-                          <p className="text-slate-500 mb-10 font-medium max-w-md">Para el ingreso a planta, el seguro y el equipo de protección son requisitos obligatorios por normativa.</p>
+                          <div>
+                            <h3 className="text-4xl font-black text-white mb-4 tracking-tighter">Seguridad Industrial</h3>
+                            <p className="text-emerald-200/60 text-sm mb-10 font-bold max-w-md">Para el ingreso a planta, el seguro de accidentes y el equipamiento de protección son requisitos institucionales obligatorios.</p>
 
-                          <div className="space-y-12">
-                            {/* Seguro Section */}
-                            <div className="relative">
-                              <div className="flex items-center justify-between mb-4">
-                                <div className="flex items-center gap-3">
-                                  <div className="p-2.5 bg-rose-50 text-rose-600 rounded-xl"><ShieldCheck size={24}/></div>
-                                  <label className="text-lg font-bold text-slate-800 tracking-tight">¿Cuenta con seguro Uni Vida?</label>
+                            <div className="space-y-12">
+                              {/* Seguro Section */}
+                              <div className="relative">
+                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                                  <div className="flex items-center gap-3">
+                                    <div className="p-2.5 bg-rose-950/40 text-rose-400 rounded-xl border border-rose-500/20"><ShieldCheck size={24}/></div>
+                                    <label className="text-lg font-bold text-white tracking-tight">¿Cuenta con seguro vigente Uni Vida?</label>
+                                  </div>
+                                  <div className="flex gap-2 p-1 bg-[#011411] rounded-2xl border border-emerald-500/10 shrink-0">
+                                    <button onClick={() => setRegForm({...regForm, tiene_seguro: true})} className={`px-6 py-2 rounded-xl text-xs font-black transition-all ${regForm.tiene_seguro ? 'bg-emerald-600 text-white shadow-md' : 'text-emerald-500 hover:text-emerald-300'}`}>SÍ</button>
+                                    <button onClick={() => setRegForm({...regForm, tiene_seguro: false})} className={`px-6 py-2 rounded-xl text-xs font-black transition-all ${!regForm.tiene_seguro ? 'bg-rose-950 text-rose-400 shadow-md border border-rose-500/20' : 'text-emerald-500 hover:text-emerald-300'}`}>NO</button>
+                                  </div>
                                 </div>
-                                <div className="flex gap-2 p-1 bg-slate-100 rounded-2xl">
-                                  <button onClick={() => setRegForm({...regForm, tiene_seguro: true})} className={`px-6 py-2 rounded-xl text-xs font-black transition-all ${regForm.tiene_seguro ? 'bg-white text-emerald-600 shadow-md' : 'text-slate-400 hover:text-slate-600'}`}>SÍ</button>
-                                  <button onClick={() => setRegForm({...regForm, tiene_seguro: false})} className={`px-6 py-2 rounded-xl text-xs font-black transition-all ${!regForm.tiene_seguro ? 'bg-white text-rose-600 shadow-md' : 'text-slate-400 hover:text-slate-600'}`}>NO</button>
-                                </div>
+
+                                <AnimatePresence>
+                                  {regForm.tiene_seguro ? (
+                                    <motion.div 
+                                      initial={{ height: 0, opacity: 0 }} 
+                                      animate={{ height: 'auto', opacity: 1 }} 
+                                      exit={{ height: 0, opacity: 0 }}
+                                      className="overflow-hidden"
+                                    >
+                                      <div className="p-6 bg-[#011411]/50 backdrop-blur-md rounded-3xl border-2 border-dashed border-emerald-500/20 mt-2">
+                                        <div className="flex flex-col items-center">
+                                           <Upload className="text-emerald-500/30 mb-3" size={32} />
+                                           <p className="text-xs font-black text-emerald-400 uppercase tracking-widest mb-4">Adjuntar Comprobante (FOTO/PDF/PNG)</p>
+                                           <input 
+                                             type="file" 
+                                             accept="image/*,.pdf"
+                                             onChange={(e) => setComprobanteFile(e.target.files?.[0] || null)}
+                                             className="text-xs text-emerald-200 file:mr-4 file:py-2 file:px-6 file:rounded-full file:border-0 file:text-xs file:font-black file:bg-emerald-800 file:text-white hover:file:bg-emerald-700 cursor-pointer"
+                                           />
+                                           {comprobanteFile && <div className="mt-4 flex items-center gap-2 text-emerald-400 font-extrabold text-xs bg-emerald-950/60 px-4 py-2 rounded-xl border border-emerald-500/30"><Check size={18}/> {comprobanteFile.name}</div>}
+                                        </div>
+                                      </div>
+                                    </motion.div>
+                                  ) : (
+                                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 bg-rose-950/40 border border-rose-500/20 rounded-2xl flex items-center gap-3 mt-4">
+                                      <AlertCircle className="text-rose-400 shrink-0" />
+                                      <p className="text-rose-300 text-xs font-black uppercase tracking-widest">El seguro es requisito obligatorio para validar su participación.</p>
+                                    </motion.div>
+                                  )}
+                                </AnimatePresence>
                               </div>
 
-                              <AnimatePresence>
-                                {regForm.tiene_seguro ? (
-                                  <motion.div 
-                                    initial={{ height: 0, opacity: 0 }} 
-                                    animate={{ height: 'auto', opacity: 1 }} 
-                                    exit={{ height: 0, opacity: 0 }}
-                                    className="overflow-hidden"
-                                  >
-                                    <div className="p-6 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200 mt-2">
-                                      <div className="flex flex-col items-center">
-                                         <Upload className="text-slate-300 mb-3" size={32} />
-                                         <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Adjuntar Comprobante (FOTO/PDF)</p>
-                                         <input 
-                                           type="file" 
-                                           accept="image/*,.pdf"
-                                           onChange={(e) => setComprobanteFile(e.target.files?.[0] || null)}
-                                           className="text-xs text-slate-500 file:mr-4 file:py-2 file:px-6 file:rounded-full file:border-0 file:text-xs file:font-black file:bg-[#001f3f] file:text-white hover:file:bg-indigo-700 cursor-pointer"
-                                         />
-                                         {comprobanteFile && <div className="mt-4 flex items-center gap-2 text-emerald-600 font-bold text-sm bg-emerald-50 px-4 py-2 rounded-xl border border-emerald-100"><Check size={18}/> {comprobanteFile.name}</div>}
-                                      </div>
+                              {/* EPP Section */}
+                              <div className="relative">
+                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                                  <div className="flex flex-col">
+                                    <div className="flex items-center gap-3">
+                                      <div className="p-2.5 bg-[#011411] text-emerald-400 rounded-xl border border-emerald-500/10"><Database size={24}/></div>
+                                      <label className="text-lg font-bold text-white tracking-tight">¿Cuenta con Equipo de Protección (EPP)?</label>
                                     </div>
-                                  </motion.div>
-                                ) : (
-                                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 bg-rose-50 border border-rose-100 rounded-2xl flex items-center gap-3 mt-4">
-                                    <AlertCircle className="text-rose-600" />
-                                    <p className="text-rose-700 text-xs font-black uppercase tracking-widest">El seguro es obligatorio para asistir a la visita.</p>
-                                  </motion.div>
-                                )}
-                              </AnimatePresence>
-                            </div>
-
-                            {/* EPP Section */}
-                            <div className="relative">
-                              <div className="flex items-center justify-between mb-4">
-                                <div className="flex flex-col">
-                                  <div className="flex items-center gap-3">
-                                    <div className="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl"><Database size={24}/></div>
-                                    <label className="text-lg font-bold text-slate-800 tracking-tight">¿Cuenta con equipo de protección (EPP)?</label>
+                                    <span className="mt-1 text-[10px] text-emerald-300/60 font-black uppercase tracking-wider pl-[44px]">(Pantalón de jean, camisa manga larga, casco, botas con punta de acero)</span>
                                   </div>
-                                  <span className="mt-1 text-[10px] text-slate-400 font-black uppercase tracking-wider pl-[44px]">(Casco, botines, pantalón jean y camisa jean)</span>
-                                </div>
-                                <div className="flex gap-2 p-1 bg-slate-100 rounded-2xl shrink-0">
-                                  <button onClick={() => setRegForm({...regForm, tiene_epp: true})} className={`px-6 py-2 rounded-xl text-xs font-black transition-all ${regForm.tiene_epp ? 'bg-white text-indigo-600 shadow-md' : 'text-slate-400 hover:text-slate-600'}`}>SÍ</button>
-                                  <button onClick={() => setRegForm({...regForm, tiene_epp: false})} className={`px-6 py-2 rounded-xl text-xs font-black transition-all ${!regForm.tiene_epp ? 'bg-white text-indigo-600 shadow-md' : 'text-slate-400 hover:text-slate-600'}`}>NO</button>
+                                  <div className="flex gap-2 p-1 bg-[#011411] rounded-2xl border border-emerald-500/10 shrink-0">
+                                    <button onClick={() => setRegForm({...regForm, tiene_epp: true})} className={`px-6 py-2 rounded-xl text-xs font-black transition-all ${regForm.tiene_epp ? 'bg-emerald-600 text-white shadow-md' : 'text-emerald-500 hover:text-emerald-300'}`}>SÍ</button>
+                                    <button onClick={() => setRegForm({...regForm, tiene_epp: false})} className={`px-6 py-2 rounded-xl text-xs font-black transition-all ${!regForm.tiene_epp ? 'bg-rose-950 text-rose-400 shadow-md border border-rose-500/20' : 'text-emerald-500 hover:text-emerald-300'}`}>NO</button>
+                                  </div>
                                 </div>
                               </div>
                             </div>
                           </div>
 
-                          <div className="mt-auto flex justify-end pt-12">
+                          <div className="mt-8 flex justify-end pt-8 border-t border-emerald-500/10">
                             <button 
                               onClick={() => setRegStep(2)}
                               disabled={!regForm.tiene_seguro || !comprobanteFile}
-                              className="h-16 px-12 bg-[#001f3f] text-white rounded-[2rem] font-black text-sm hover:scale-105 transition-all shadow-xl disabled:opacity-50 disabled:grayscale flex items-center gap-3"
+                              className="h-16 px-12 bg-gradient-to-r from-amber-500 to-amber-600 text-teal-950 rounded-[2rem] font-black text-sm hover:scale-105 transition-all shadow-xl disabled:opacity-30 disabled:grayscale flex items-center gap-3"
                             >Siguiente Paso <CheckCircle2 size={20}/></button>
                           </div>
                         </motion.div>
@@ -1223,53 +1291,55 @@ export default function App() {
                           initial={{ opacity: 0, x: 20 }} 
                           animate={{ opacity: 1, x: 0 }} 
                           exit={{ opacity: 0, x: -20 }}
-                          className="flex-1 flex flex-col"
+                          className="flex-1 flex flex-col justify-between"
                         >
-                          <h3 className="text-4xl font-black text-slate-800 mb-4 tracking-tighter">Información Médica</h3>
-                          <p className="text-slate-500 mb-10 font-medium max-w-md">Estos datos son confidenciales y se usarán únicamente en caso de emergencia durante la visita.</p>
+                          <div>
+                            <h3 className="text-4xl font-black text-white mb-4 tracking-tighter">Información Médica</h3>
+                            <p className="text-emerald-200/60 mb-10 font-bold text-sm max-w-md">Estos datos son de carácter estrictamente confidencial para uso médico preventivo en la visita.</p>
 
-                          <div className="space-y-8 flex-1">
-                            <div>
-                               <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-3 block pl-2">Estado de Salud / Discapacidad</label>
-                               <textarea 
-                                 value={regForm.problema_salud}
-                                 onChange={(e) => setRegForm({...regForm, problema_salud: e.target.value})}
-                                 placeholder="Describa si padece alguna afección médica relevante..."
-                                 className="w-full h-40 p-6 bg-slate-50 border-2 border-slate-100 rounded-3xl outline-none focus:border-[#001f3f] focus:bg-white transition-all text-slate-700 font-medium resize-none shadow-inner"
-                               />
-                            </div>
+                            <div className="space-y-8 flex-1">
+                              <div>
+                                 <label className="text-[10px] font-black uppercase text-emerald-300 tracking-widest mb-3 block pl-2">Estado de Salud / Alergias relevantes</label>
+                                 <textarea 
+                                   value={regForm.problema_salud}
+                                   onChange={(e) => setRegForm({...regForm, problema_salud: e.target.value})}
+                                   placeholder="Indique si padece alguna afección de salud, alergia relevante o si prefiere reportar estado saludable..."
+                                   className="w-full h-40 p-6 bg-[#011411]/60 border-2 border-emerald-500/15 focus:border-amber-400 text-white rounded-3xl outline-none transition-all placeholder:text-emerald-800 font-medium resize-none shadow-inner"
+                                 />
+                              </div>
 
-                            <div>
-                               <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-3 block pl-2">Celular de Emergencia (Referencia)</label>
-                               <div className="relative">
-                                  <Users className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none" size={24} />
-                                  <input 
-                                    type="number"
-                                    value={regForm.contacto_referencia}
-                                    onChange={(e) => setRegForm({...regForm, contacto_referencia: e.target.value})}
-                                    placeholder="Número de contacto actualizado"
-                                    className="w-full h-20 pl-16 pr-8 bg-slate-50 border-2 border-slate-100 rounded-3xl outline-none focus:border-[#001f3f] focus:bg-white transition-all text-xl font-black shadow-inner"
-                                  />
-                               </div>
+                              <div>
+                                 <label className="text-[10px] font-black uppercase text-emerald-300 tracking-widest mb-3 block pl-2">Teléfono de Emergencia (Referencia familiar)</label>
+                                 <div className="relative">
+                                    <Users className="absolute left-6 top-1/2 -translate-y-1/2 text-emerald-600 pointer-events-none" size={24} />
+                                    <input 
+                                      type="number"
+                                      value={regForm.contacto_referencia}
+                                      onChange={(e) => setRegForm({...regForm, contacto_referencia: e.target.value})}
+                                      placeholder="Número celular de contacto de emergencia"
+                                      className="w-full h-20 pl-16 pr-8 bg-[#011411]/60 border-2 border-emerald-500/15 focus:border-amber-400 text-white rounded-3xl outline-none transition-all text-xl font-black shadow-inner"
+                                    />
+                                 </div>
+                              </div>
                             </div>
                           </div>
 
-                          <div className="mt-12 flex justify-between items-center bg-slate-50 p-4 rounded-[2.5rem]">
+                          <div className="mt-8 flex justify-between items-center bg-[#011411]/80 p-4 rounded-[2.5rem] border border-emerald-500/10">
                             <button 
                               onClick={() => setRegStep(1)}
-                              className="h-16 px-8 text-slate-400 font-black text-sm uppercase tracking-widest hover:text-slate-600 transition-colors"
+                              className="h-16 px-8 text-emerald-400 font-extrabold text-sm uppercase tracking-widest hover:text-emerald-200 transition-colors"
                             >Volver</button>
 
                             <button 
                               onClick={submitRegistration}
                               disabled={isBooking !== null || !regForm.contacto_referencia.trim()}
-                              className="h-16 px-12 bg-emerald-600 text-white rounded-2xl font-black text-lg hover:scale-105 transition-all shadow-xl flex items-center gap-3 disabled:opacity-50 disabled:grayscale"
+                              className="h-16 px-12 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-2xl font-black text-lg hover:scale-105 transition-all shadow-xl flex items-center gap-3 disabled:opacity-40"
                             >
                               {isBooking ? <Loader2 className="animate-spin" /> : <CheckCircle2 size={24}/>}
                               CONFIRMAR ASISTENCIA
                             </button>
                           </div>
-                          {regError && <p className="mt-4 text-center text-xs font-black text-rose-500 uppercase tracking-widest animate-pulse">{regError}</p>}
+                          {regError && <p className="mt-4 text-center text-xs font-black text-rose-400 uppercase tracking-widest animate-pulse">{regError}</p>}
                         </motion.div>
                       )}
                     </AnimatePresence>
@@ -1283,48 +1353,48 @@ export default function App() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-[#001f3f]/80 backdrop-blur-xl z-[100] flex items-center justify-center p-4 overflow-y-auto"
+                className="fixed inset-0 bg-slate-950/80 backdrop-blur-xl z-[100] flex items-center justify-center p-4 overflow-y-auto"
               >
                 <motion.div 
                   initial={{ scale: 0.95, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   exit={{ scale: 0.95, opacity: 0 }}
-                  className="bg-white rounded-[2.5rem] w-full max-w-lg p-8 md:p-10 shadow-2xl relative animate-in zoom-in-95 duration-150"
+                  className="bg-[#021c17] text-white rounded-[2.5rem] w-full max-w-lg p-8 md:p-10 shadow-2xl relative border border-emerald-500/10"
                 >
                   <button 
                     onClick={() => setShowCancelModal(null)}
-                    className="absolute top-6 right-6 p-2 bg-slate-50 text-slate-400 hover:text-rose-500 rounded-full transition-all"
+                    className="absolute top-6 right-6 p-2 bg-[#022a22] text-emerald-300 hover:text-rose-400 rounded-full transition-all border border-emerald-500/20"
                   >
                     <XCircle size={24} />
                   </button>
 
                   <div className="mb-6 mt-2">
-                    <div className="p-4 bg-rose-50 text-rose-600 w-fit rounded-2xl shadow-sm mb-4">
+                    <div className="p-4 bg-rose-950/40 border border-rose-500/20 text-rose-400 w-fit rounded-2xl shadow-sm mb-4">
                       <AlertTriangle size={32} />
                     </div>
-                    <h2 className="text-2xl font-black text-slate-800 leading-tight">Anular Inscripción</h2>
-                    <p className="text-slate-500 text-xs font-semibold mt-1">
+                    <h2 className="text-2xl font-black text-white leading-tight">Anular Inscripción</h2>
+                    <p className="text-emerald-200/60 text-xs font-extrabold mt-1 leading-normal">
                       ¿Está seguro que desea anular su inscripción para <strong>{availableVisits.find(v => v.id === showCancelModal)?.nombre}</strong>?
                     </p>
                   </div>
 
                   <div className="space-y-4">
                     <div>
-                      <label className="text-[10px] font-black uppercase text-rose-500 tracking-widest pl-2 mb-2 block">
+                      <label className="text-[10px] font-black uppercase text-rose-300 tracking-widest pl-2 mb-2 block">
                         Motivo de la Anulación (Obligatorio)
                       </label>
                       <textarea
                         value={cancelReason}
                         onChange={(e) => setCancelReason(e.target.value)}
                         placeholder="Ej. Cruce de materias, enfermedad, etc."
-                        className="w-full h-32 p-4 bg-slate-50 border-2 border-slate-100 focus:border-rose-500 focus:ring-4 focus:ring-rose-50 rounded-2xl outline-none transition-all placeholder:text-slate-300 font-bold text-sm resize-none"
+                        className="w-full h-32 p-4 bg-[#011411]/60 border-2 border-emerald-500/15 focus:border-rose-400 text-white rounded-2xl outline-none transition-all placeholder:text-emerald-800 font-bold text-sm resize-none shadow-inner"
                         required
                       />
                     </div>
                   </div>
 
                   {regError && (
-                    <p className="mt-4 text-[10px] font-black text-rose-500 uppercase tracking-widest text-center animate-pulse">
+                    <p className="mt-4 text-[10px] font-black text-rose-400 uppercase tracking-widest text-center animate-pulse">
                       {regError}
                     </p>
                   )}
@@ -1332,14 +1402,14 @@ export default function App() {
                   <div className="mt-8 flex gap-4 justify-end">
                     <button
                       onClick={() => setShowCancelModal(null)}
-                      className="px-6 h-12 rounded-xl text-xs font-black uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-colors"
+                      className="px-6 h-12 rounded-xl text-xs font-black uppercase tracking-widest text-emerald-400 hover:text-emerald-200 transition-colors"
                     >
                       Cancelar
                     </button>
                     <button
                       onClick={submitCancellation}
                       disabled={isCanceling || !cancelReason.trim()}
-                      className="px-8 h-12 bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-xl shadow-rose-100 flex items-center gap-2 transition-all hover:scale-105"
+                      className="px-8 h-12 bg-rose-950 text-rose-300 border border-rose-500/20 hover:bg-rose-900 disabled:opacity-30 rounded-xl font-black text-xs uppercase tracking-widest shadow-xl flex items-center gap-2 transition-all hover:scale-105"
                     >
                       {isCanceling ? <Loader2 className="animate-spin w-4 h-4" /> : <Trash2 size={16}/>}
                       Confirmar Anulación
@@ -1356,17 +1426,19 @@ export default function App() {
 
   // --- Admin View ---
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
-      <div className="flex flex-col md:flex-row min-h-screen">
+    <div className="min-h-screen bg-gradient-to-br from-green-950 via-emerald-900 to-teal-950 font-sans text-white relative overflow-hidden">
+      <CEICBackground />
+      
+      <div className="flex flex-col md:flex-row min-h-screen relative z-10 bg-[#001410]/40 backdrop-blur-md">
         {/* Sidebar */}
-        <aside className="w-full md:w-72 bg-white border-r border-slate-100 flex flex-col p-6 shadow-sm">
+        <aside className="w-full md:w-72 bg-[#011a15]/85 backdrop-blur-md border-r border-emerald-500/10 flex flex-col p-6 shadow-xl relative z-20">
           <div className="flex items-center gap-3 mb-10 px-2 leading-none">
-            <div className="p-2.5 bg-indigo-600 text-white rounded-2xl">
+            <div className="p-2.5 bg-gradient-to-br from-amber-400 to-amber-600 border border-amber-300/20 text-teal-950 rounded-2xl">
               <ShieldCheck size={28} />
             </div>
             <div>
-              <h1 className="text-xl font-black text-slate-800 tracking-tighter uppercase">ADMIN</h1>
-              <span className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase">Panel de Control</span>
+              <h1 className="text-xl font-black text-white tracking-tighter uppercase">ADMIN</h1>
+              <span className="text-[9px] font-black text-emerald-400 tracking-[0.2em] uppercase">Panel de Control</span>
             </div>
           </div>
 
@@ -1383,8 +1455,8 @@ export default function App() {
                 onClick={() => setAdminTab(tab.id as any)}
                 className={`w-full flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-bold transition-all ${
                   adminTab === tab.id 
-                    ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-100' 
-                    : 'text-slate-500 hover:text-indigo-600 hover:bg-indigo-50/50'
+                    ? 'bg-gradient-to-r from-emerald-600 to-teal-800 text-white shadow-xl border border-emerald-400/20' 
+                    : 'text-emerald-300/70 hover:text-amber-400 hover:bg-emerald-950/40'
                 }`}
               >
                 <tab.icon size={20} />
@@ -1393,7 +1465,7 @@ export default function App() {
             ))}
           </nav>
 
-          <button onClick={handleLogout} className="mt-auto flex items-center gap-4 px-4 py-3 text-slate-400 font-bold hover:text-rose-500 transition-colors">
+          <button onClick={handleLogout} className="mt-auto flex items-center gap-4 px-4 py-3 text-emerald-400 font-extrabold hover:text-rose-400 transition-colors">
             <LogOut size={20}/> Salir
           </button>
         </aside>
@@ -1405,65 +1477,65 @@ export default function App() {
               <motion.div key="vis" initial={{opacity:0, y:20}} animate={{opacity:1, y:0}} className="space-y-6">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h2 className="text-2xl font-black text-slate-800">Gestión de Visitas</h2>
-                    <p className="text-sm text-slate-400 font-medium tracking-tight">Administre las visitas técnicas y empresas registradas.</p>
+                    <h2 className="text-2xl font-black text-white">Gestión de Visitas</h2>
+                    <p className="text-sm text-emerald-300/60 font-bold tracking-tight">Administre las visitas técnicas y empresas registradas.</p>
                   </div>
                   <button 
                     onClick={() => { handleResetVisitForm(); setShowVisitModal(true); }}
-                    className="px-6 py-3 bg-indigo-600 text-white rounded-2xl font-black text-sm flex items-center gap-2 hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200"
+                    className="px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-teal-950 rounded-2xl font-black text-sm flex items-center gap-2 hover:from-amber-400 hover:to-amber-500 transition-all shadow-lg shadow-amber-950/35"
                   >
                     <Plus size={18}/> Nueva Visita
                   </button>
                 </div>
 
-                <div className="bg-white rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/40 overflow-hidden">
+                <div className="bg-white rounded-[2rem] shadow-xl border border-slate-200 overflow-hidden text-slate-800">
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                       <thead>
-                        <tr className="bg-slate-50/50 border-b border-slate-100">
-                          <th className="p-5 text-[10px] font-black uppercase text-slate-400 tracking-widest pl-8">Empresa / Visita</th>
-                          <th className="p-5 text-[10px] font-black uppercase text-slate-400 tracking-widest text-center">Ubicación</th>
-                          <th className="p-5 text-[10px] font-black uppercase text-slate-400 tracking-widest text-center">Fecha / Hora</th>
-                          <th className="p-5 text-[10px] font-black uppercase text-slate-400 tracking-widest text-center">Nivel</th>
-                          <th className="p-5 text-[10px] font-black uppercase text-slate-400 tracking-widest text-center">Cupos</th>
-                          <th className="p-5 text-[10px] font-black uppercase text-slate-400 tracking-widest text-right pr-8">Acciones</th>
+                        <tr className="bg-slate-50 border-b border-slate-200">
+                          <th className="p-5 text-[10px] font-black uppercase text-slate-500 tracking-widest pl-8 animate-fade-in">Empresa / Visita</th>
+                          <th className="p-5 text-[10px] font-black uppercase text-slate-500 tracking-widest text-center">Ubicación</th>
+                          <th className="p-5 text-[10px] font-black uppercase text-slate-500 tracking-widest text-center">Fecha / Hora</th>
+                          <th className="p-5 text-[10px] font-black uppercase text-slate-500 tracking-widest text-center">Nivel</th>
+                          <th className="p-5 text-[10px] font-black uppercase text-slate-500 tracking-widest text-center">Cupos</th>
+                          <th className="p-5 text-[10px] font-black uppercase text-slate-500 tracking-widest text-right pr-8">Acciones</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-50">
+                      <tbody className="divide-y divide-slate-100 bg-white text-slate-700">
                         {availableVisits.map(v => (
-                          <tr key={v.id} className="hover:bg-slate-50/30 transition-colors group">
+                          <tr key={v.id} className="hover:bg-slate-50/70 transition-colors group">
                             <td className="p-5 pl-8">
                               <div className="flex items-center gap-4">
-                                <div className="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl">
+                                <div className="p-2.5 bg-slate-100 text-slate-700 border border-slate-200 rounded-xl">
                                   <Calendar size={18}/>
                                 </div>
                                 <div>
-                                  <div className="font-extrabold text-slate-800">{v.nombre}</div>
+                                  <div className="font-extrabold text-slate-900 text-base">{v.nombre}</div>
                                   <div className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">ID: {v.id.split('-')[0]}...</div>
                                 </div>
                               </div>
                             </td>
                             <td className="p-5 text-center">
-                              <span className="text-sm font-medium text-slate-500">{v.descripcion}</span>
+                              <span className="text-sm font-bold text-slate-600">{v.descripcion}</span>
                             </td>
                             <td className="p-5 text-center">
                               <div className="flex flex-col items-center">
-                                <span className="text-sm font-bold text-slate-700">{new Date(v.fecha).toLocaleDateString()}</span>
-                                <span className="text-[10px] font-black text-indigo-400 uppercase">{v.horario || 'N/D'}</span>
+                                <span className="text-sm font-extrabold text-slate-800">{new Date(v.fecha).toLocaleDateString()}</span>
+                                <span className="text-[10px] font-black text-amber-600 uppercase tracking-tight">{v.horario || 'N/D'}</span>
                               </div>
                             </td>
                             <td className="p-5 text-center">
-                              <span className="px-3 py-1 bg-slate-50 text-slate-500 rounded-full text-[10px] font-black uppercase tracking-widest">NVL {v.min_nivel}+</span>
+                              <span className="px-3 py-1 bg-slate-100 border border-slate-200 text-slate-700 rounded-full text-[10px] font-black uppercase tracking-wider">NVL {v.min_nivel}+</span>
                             </td>
                             <td className="p-5 text-center">
                               <div className="flex flex-col items-center">
-                                <div className="flex items-center gap-1.5 text-sm font-bold text-slate-800">
-                                  <Users size={14} className="text-slate-300"/>
+                                <div className="flex items-center gap-1.5 text-sm font-black text-slate-800">
+                                  <Users size={14} className="text-slate-400"/>
                                   {allRegistrations.filter(r => r.visita_id === v.id && r.estado !== 'ANULADO').length} / {v.cupos_max}
                                 </div>
-                                  <div className="w-16 h-1 bg-slate-100 rounded-full mt-1.5 overflow-hidden">
+                                  <div className="w-16 h-1 bg-slate-100 rounded-full mt-1.5 overflow-hidden border border-slate-200">
                                     <div 
-                                      className="h-full bg-indigo-500 rounded-full transition-all" 
+                                      className="h-full bg-gradient-to-r from-amber-500 to-amber-600 rounded-full transition-all" 
                                       style={{
                                         width: `${Math.min(100, 
                                           (v.cupos_max > 0) 
@@ -1493,21 +1565,21 @@ export default function App() {
                                     });
                                     setShowVisitModal(true);
                                   }}
-                                  className="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors"
+                                  className="p-2 bg-slate-50 border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-100 hover:text-slate-800 transition-colors"
                                   title="Editar"
                                 >
                                   <RefreshCw size={16}/>
                                 </button>
                                 <button 
                                   onClick={() => fetchVisitStatus(v)}
-                                  className="p-2 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100 transition-colors"
+                                  className="p-2 bg-slate-50 border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-100 hover:text-slate-800 transition-colors"
                                   title="Ver Estado"
                                 >
                                   <Eye size={16}/>
                                 </button>
                                 <button 
                                   onClick={() => handleDeleteVisit(v.id)}
-                                  className="p-2 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100 transition-colors"
+                                  className="p-2 bg-rose-50 border border-rose-100 text-rose-600 rounded-lg hover:bg-rose-100 hover:text-rose-700 transition-colors"
                                   title="Eliminar"
                                 >
                                   <Trash2 size={16}/>
@@ -1521,12 +1593,12 @@ export default function App() {
                   </div>
                   
                   {availableVisits.length === 0 && (
-                    <div className="py-20 text-center bg-slate-50/30">
-                      <Calendar size={48} className="mx-auto text-slate-200 mb-4"/>
-                      <p className="text-slate-400 font-bold">No hay visitas configuradas en la base de datos.</p>
+                    <div className="py-20 text-center bg-slate-50 border border-slate-200 rounded-[2rem]">
+                      <Calendar size={48} className="mx-auto text-slate-300 mb-4"/>
+                      <p className="text-slate-500 font-bold">No hay visitas configuradas en la base de datos.</p>
                       <button 
                         onClick={() => { handleResetVisitForm(); setShowVisitModal(true); }}
-                        className="mt-4 px-6 py-2 bg-white border border-slate-200 rounded-xl text-indigo-600 font-black text-xs uppercase tracking-widest hover:bg-slate-50"
+                        className="mt-4 px-6 py-2 bg-gradient-to-r from-amber-500 to-amber-600 rounded-xl text-teal-950 font-black text-xs uppercase tracking-widest hover:scale-105 transition-all"
                       >Crear la primera visita</button>
                     </div>
                   )}
@@ -1536,80 +1608,80 @@ export default function App() {
                   {showVisitModal && (
                     <motion.div 
                       initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
-                      className="fixed inset-0 bg-[#001f3f]/60 backdrop-blur-md z-[200] flex items-center justify-center p-4"
+                      className="fixed inset-0 bg-slate-950/85 backdrop-blur-xl z-[200] flex items-center justify-center p-4"
                     >
                       <motion.div 
                         initial={{scale:0.9, y:20}} animate={{scale:1, y:0}} exit={{scale:0.9, y:20}}
-                        className="bg-white rounded-[2.5rem] p-10 max-w-2xl w-full shadow-2xl relative"
+                        className="bg-[#021c17] text-white rounded-[2.5rem] p-10 max-w-2xl w-full border border-emerald-500/15 shadow-2xl relative"
                       >
-                        <button onClick={handleResetVisitForm} className="absolute top-8 right-8 text-slate-300 hover:text-rose-500 transition-colors"><XCircle size={32}/></button>
+                        <button onClick={handleResetVisitForm} className="absolute top-8 right-8 text-emerald-400 bg-[#022a22] p-1.5 border border-emerald-500/20 rounded-full hover:text-rose-400 transition-colors"><XCircle size={24}/></button>
                         
                         <div className="flex items-center gap-4 mb-8">
-                          <div className="p-4 bg-indigo-600 text-white rounded-3xl shadow-lg shadow-indigo-100"><Calendar size={32}/></div>
+                          <div className="p-4 bg-gradient-to-br from-emerald-500 to-teal-850 border border-emerald-400/20 text-white rounded-3xl shadow-lg"><Calendar size={32}/></div>
                           <div>
-                            <h2 className="text-2xl font-black text-slate-800">{editingVisit ? 'Editar Visita' : 'Nueva Visita Técnica'}</h2>
-                            <p className="text-sm text-slate-400 font-bold uppercase tracking-widest">Información de la empresa y logística</p>
+                            <h2 className="text-2xl font-black text-white">{editingVisit ? 'Editar Visita' : 'Nueva Visita Técnica'}</h2>
+                            <p className="text-xs text-amber-400 font-extrabold uppercase tracking-widest leading-none mt-1">Información de la empresa y logística</p>
                           </div>
                         </div>
 
                         <form onSubmit={handleSaveVisit} className="space-y-6">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="md:col-span-2">
-                              <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-2 block pl-2">Nombre de la Empresa</label>
+                              <label className="text-[10px] font-black uppercase text-emerald-300 tracking-widest mb-2 block pl-2">Nombre de la Empresa</label>
                               <input 
                                 type="text"
                                 placeholder="Ej: YPFB Refinería"
                                 value={visitForm.nombre}
                                 onChange={(e) => setVisitForm({...visitForm, nombre: e.target.value})}
                                 required
-                                className="w-full h-14 px-6 bg-slate-50 border-2 border-slate-100 rounded-2xl outline-none focus:border-indigo-600 focus:bg-white transition-all font-bold"
+                                className="w-full h-14 px-6 bg-[#011411]/60 border-2 border-emerald-500/15 focus:border-amber-400 focus:bg-transparent text-white rounded-2xl outline-none transition-all font-bold placeholder:text-emerald-800"
                               />
                             </div>
                             <div>
-                              <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-2 block pl-2">Fecha de Visita</label>
+                              <label className="text-[10px] font-black uppercase text-emerald-300 tracking-widest mb-2 block pl-2">Fecha de Visita</label>
                               <input 
                                 type="date"
                                 value={visitForm.fecha}
                                 onChange={(e) => setVisitForm({...visitForm, fecha: e.target.value})}
                                 required
-                                className="w-full h-14 px-6 bg-slate-50 border-2 border-slate-100 rounded-2xl outline-none focus:border-indigo-600 focus:bg-white transition-all font-bold"
+                                className="w-full h-14 px-6 bg-[#011411]/60 border-2 border-emerald-500/15 focus:border-amber-400 focus:bg-transparent text-white rounded-2xl outline-none transition-all font-bold placeholder:text-emerald-800"
                               />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                               <div>
-                                <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-2 block pl-2">Horario Inicio</label>
+                                <label className="text-[10px] font-black uppercase text-emerald-300 tracking-widest mb-2 block pl-2">Horario Inicio</label>
                                 <input 
                                   type="time"
                                   value={visitForm.horario_inicio}
                                   onChange={(e) => setVisitForm({...visitForm, horario_inicio: e.target.value})}
                                   required
-                                  className="w-full h-14 px-6 bg-slate-50 border-2 border-slate-100 rounded-2xl outline-none focus:border-indigo-600 focus:bg-white transition-all font-bold"
+                                  className="w-full h-14 px-6 bg-[#011411]/60 border-2 border-emerald-500/15 focus:border-amber-400 focus:bg-transparent text-white rounded-2xl outline-none transition-all font-bold"
                                 />
                               </div>
                               <div>
-                                <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-2 block pl-2">Horario Fin</label>
+                                <label className="text-[10px] font-black uppercase text-emerald-300 tracking-widest mb-2 block pl-2">Horario Fin</label>
                                 <input 
                                   type="time"
                                   value={visitForm.horario_fin}
                                   onChange={(e) => setVisitForm({...visitForm, horario_fin: e.target.value})}
                                   required
-                                  className="w-full h-14 px-6 bg-slate-50 border-2 border-slate-100 rounded-2xl outline-none focus:border-indigo-600 focus:bg-white transition-all font-bold"
+                                  className="w-full h-14 px-6 bg-[#011411]/60 border-2 border-emerald-500/15 focus:border-amber-400 focus:bg-transparent text-white rounded-2xl outline-none transition-all font-bold"
                                 />
                               </div>
                             </div>
                             <div>
-                              <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-2 block pl-2">Cupos Disponibles</label>
+                              <label className="text-[10px] font-black uppercase text-emerald-300 tracking-widest mb-2 block pl-2">Cupos Disponibles</label>
                               <input 
                                 type="number"
                                 value={visitForm.cupos_max}
                                 onChange={(e) => setVisitForm({...visitForm, cupos_max: parseInt(e.target.value)})}
                                 required
                                 min="1"
-                                className="w-full h-14 px-6 bg-slate-50 border-2 border-slate-100 rounded-2xl outline-none focus:border-indigo-600 focus:bg-white transition-all font-bold"
+                                className="w-full h-14 px-6 bg-[#011411]/60 border-2 border-emerald-500/15 focus:border-amber-400 focus:bg-transparent text-white rounded-2xl outline-none transition-all font-bold"
                               />
                             </div>
                             <div>
-                              <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-2 block pl-2">Nivel Mínimo (Semestre)</label>
+                              <label className="text-[10px] font-black uppercase text-emerald-300 tracking-widest mb-2 block pl-2">Nivel Mínimo (Semestre)</label>
                               <input 
                                 type="number"
                                 value={visitForm.min_nivel}
@@ -1617,26 +1689,26 @@ export default function App() {
                                 required
                                 min="1"
                                 max="10"
-                                className="w-full h-14 px-6 bg-slate-50 border-2 border-slate-100 rounded-2xl outline-none focus:border-indigo-600 focus:bg-white transition-all font-bold"
+                                className="w-full h-14 px-6 bg-[#011411]/60 border-2 border-emerald-500/15 focus:border-amber-400 focus:bg-transparent text-white rounded-2xl outline-none transition-all font-bold"
                               />
                             </div>
                             <div className="md:col-span-2">
-                              <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-2 block pl-2">Ubicación / Descripción</label>
+                              <label className="text-[10px] font-black uppercase text-emerald-300 tracking-widest mb-2 block pl-2">Ubicación / Descripción</label>
                               <textarea 
                                 placeholder="Dirección exacta o detalles logísticos"
                                 value={visitForm.descripcion}
                                 onChange={(e) => setVisitForm({...visitForm, descripcion: e.target.value})}
                                 required
-                                className="w-full h-28 p-6 bg-slate-50 border-2 border-slate-100 rounded-2xl outline-none focus:border-indigo-600 focus:bg-white transition-all font-medium resize-none shadow-inner"
+                                className="w-full h-28 p-6 bg-[#011411]/60 border-2 border-emerald-500/15 focus:border-amber-400 focus:bg-transparent text-white rounded-2xl outline-none transition-all font-medium resize-none shadow-inner placeholder:text-emerald-800 animate-none"
                               />
                             </div>
                           </div>
                           <div className="flex justify-end gap-3 pt-4">
-                            <button type="button" onClick={handleResetVisitForm} className="h-14 px-6 font-black text-slate-400 text-[10px] uppercase tracking-widest hover:text-slate-600 transition-colors">Cancelar</button>
+                            <button type="button" onClick={handleResetVisitForm} className="h-14 px-6 font-black text-emerald-400 text-xs uppercase tracking-widest hover:text-emerald-200 transition-colors">Cancelar</button>
                             <button 
                               type="submit" 
                               disabled={isSavingVisit}
-                              className="h-14 px-10 bg-indigo-600 text-white rounded-2xl font-black text-sm hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-indigo-200 flex items-center gap-3 disabled:opacity-50 disabled:grayscale"
+                              className="h-14 px-10 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-2xl font-black text-sm hover:scale-[1.02] active:scale-95 transition-all shadow-xl flex items-center gap-3 disabled:opacity-40"
                             >
                               {isSavingVisit ? <Loader2 className="animate-spin" size={18}/> : <Database size={18}/>}
                               {editingVisit ? 'ACTUALIZAR VISITA' : 'CREAR VISITA'}
@@ -1651,37 +1723,37 @@ export default function App() {
                     <motion.div 
                       key="visit-status"
                       initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
-                      className="fixed inset-0 bg-[#001f3f]/60 backdrop-blur-md z-[200] flex items-center justify-center p-4"
+                      className="fixed inset-0 bg-slate-950/85 backdrop-blur-xl z-[200] flex items-center justify-center p-4"
                     >
                       <motion.div 
                         initial={{scale:0.9, y:20}} animate={{scale:1, y:0}} exit={{scale:0.9, y:20}}
-                        className="bg-white rounded-[2.5rem] p-10 max-w-4xl w-full shadow-2xl relative max-h-[90vh] overflow-hidden flex flex-col"
+                        className="bg-[#021c17] text-white rounded-[2.5rem] p-10 max-w-4xl w-full border border-emerald-500/15 shadow-2xl relative max-h-[90vh] overflow-hidden flex flex-col"
                       >
-                        <button onClick={() => setSelectedVisitForStatus(null)} className="absolute top-8 right-8 text-slate-300 hover:text-rose-500 transition-colors"><XCircle size={32}/></button>
+                        <button onClick={() => setSelectedVisitForStatus(null)} className="absolute top-8 right-8 text-emerald-400 bg-[#022a22] p-1.5 border border-emerald-500/20 rounded-full hover:text-rose-400 transition-colors"><XCircle size={24}/></button>
                         
                         <div className="flex items-center gap-4 mb-8">
-                          <div className="p-4 bg-emerald-600 text-white rounded-3xl shadow-lg shadow-emerald-100"><Eye size={32}/></div>
+                          <div className="p-4 bg-gradient-to-br from-emerald-500 to-teal-850 border border-emerald-400/20 text-white rounded-3xl shadow-lg"><Eye size={32}/></div>
                           <div>
-                            <h2 className="text-2xl font-black text-slate-800">Estado: {selectedVisitForStatus.nombre}</h2>
-                            <div className="flex items-center gap-3">
-                              <p className="text-sm text-slate-400 font-bold uppercase tracking-widest">{selectedVisitForStatus.fecha} | {selectedVisitForStatus.horario}</p>
-                              <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${enrolledStudents.filter((r: any) => r.estado !== 'ANULADO').length >= selectedVisitForStatus.cupos_max ? 'bg-rose-100 text-rose-600' : 'bg-emerald-100 text-emerald-600'}`}>
+                            <h2 className="text-2xl font-black text-white">Estado: {selectedVisitForStatus.nombre}</h2>
+                            <div className="flex items-center gap-3 mt-1.5">
+                              <p className="text-xs text-amber-400 font-extrabold uppercase tracking-widest">{selectedVisitForStatus.fecha} | {selectedVisitForStatus.horario}</p>
+                              <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${enrolledStudents.filter((r: any) => r.estado !== 'ANULADO').length >= selectedVisitForStatus.cupos_max ? 'bg-rose-950/30 border border-rose-500/20 text-rose-400' : 'bg-emerald-950 border border-emerald-500/25 text-emerald-300'}`}>
                                 {enrolledStudents.filter((r: any) => r.estado !== 'ANULADO').length} / {selectedVisitForStatus.cupos_max} Inscritos
                               </span>
                             </div>
                           </div>
                         </div>
 
-                        <div className="flex-1 overflow-auto bg-slate-50/50 rounded-2xl p-4 border border-slate-100">
+                        <div className="flex-1 overflow-auto bg-[#011411]/50 rounded-2xl p-6 border border-emerald-500/10">
                           {isLoadingStatus ? (
                             <div className="py-20 text-center">
-                              <Loader2 className="animate-spin mx-auto text-indigo-600 mb-4" size={48}/>
-                              <p className="text-slate-400 font-bold">Cargando lista de estudiantes...</p>
+                              <Loader2 className="animate-spin mx-auto text-emerald-500 mb-4" size={48}/>
+                              <p className="text-emerald-300/80 font-bold">Cargando lista de estudiantes...</p>
                             </div>
                           ) : enrolledStudents.length > 0 ? (
                             <table className="w-full text-left text-xs border-collapse">
                               <thead>
-                                <tr className="border-b border-slate-100 text-slate-400 uppercase tracking-widest font-black text-[10px]">
+                                <tr className="border-b border-emerald-500/20 text-emerald-400 uppercase tracking-widest font-black text-[10px]">
                                   <th className="p-4">Estudiante</th>
                                   <th className="p-4">Registro</th>
                                   <th className="p-4">Carrera</th>
@@ -1690,26 +1762,26 @@ export default function App() {
                               </thead>
                               <tbody>
                                 {enrolledStudents.map((reg: any) => (
-                                  <tr key={reg.id} className={`border-b border-slate-50 last:border-0 hover:bg-white transition-colors ${reg.estado === 'ANULADO' ? 'bg-rose-50/20 text-slate-400 opacity-60' : ''}`}>
-                                    <td className="p-4 font-bold text-slate-800">
-                                      <span className={reg.estado === 'ANULADO' ? 'line-through text-slate-400 font-normal' : ''}>
+                                  <tr key={reg.id} className={`border-b border-emerald-500/5 last:border-0 hover:bg-emerald-950/30 transition-colors ${reg.estado === 'ANULADO' ? 'bg-rose-950/20 text-emerald-550/40 opacity-50' : ''}`}>
+                                    <td className="p-4 font-bold text-white">
+                                      <span className={reg.estado === 'ANULADO' ? 'line-through text-rose-300/40 font-normal' : ''}>
                                         {reg.student?.nombre || reg.nombre_estudiante || '---'}
                                       </span>
                                       {reg.estado === 'ANULADO' && (
-                                        <span className="ml-2 px-1.5 py-0.5 bg-rose-100 text-rose-700 rounded text-[9px] font-black uppercase tracking-wider">ANULADO</span>
+                                        <span className="ml-2 px-1.5 py-0.5 bg-rose-950/40 border border-rose-500/30 text-rose-400 rounded text-[9px] font-black uppercase tracking-wider">ANULADO</span>
                                       )}
                                     </td>
-                                    <td className="p-4 font-mono text-indigo-600">{reg.estudiante_registro}</td>
-                                    <td className="p-4 text-slate-500">{reg.student?.carrera || '---'}</td>
-                                    <td className="p-4 text-slate-500 font-mono text-[10px]">{reg.student?.celular || reg.student?.telefono || '---'}</td>
+                                    <td className="p-4 font-mono text-amber-400 font-extrabold">{reg.estudiante_registro}</td>
+                                    <td className="p-4 text-emerald-100/70">{reg.student?.carrera || '---'}</td>
+                                    <td className="p-4 text-emerald-100/70 font-mono text-[10px]">{reg.student?.celular || reg.student?.telefono || '---'}</td>
                                   </tr>
                                 ))}
                               </tbody>
                             </table>
                           ) : (
                             <div className="py-20 text-center">
-                              <Users className="mx-auto text-slate-200 mb-4" size={48}/>
-                              <p className="text-slate-300 font-bold text-lg">No hay estudiantes inscritos aún.</p>
+                              <Users className="mx-auto text-emerald-600/40 mb-4" size={48}/>
+                              <p className="text-emerald-300/80 font-bold text-lg">No hay estudiantes inscritos aún.</p>
                             </div>
                           )}
                         </div>
@@ -1718,7 +1790,7 @@ export default function App() {
                           <button 
                             onClick={handleExportPDF}
                             disabled={enrolledStudents.length === 0}
-                            className="bg-indigo-600 text-white px-8 h-14 rounded-2xl font-black shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all flex items-center gap-2 disabled:opacity-50 disabled:grayscale"
+                            className="bg-gradient-to-r from-amber-500 to-amber-600 text-teal-950 px-8 h-14 rounded-2xl font-black shadow-lg hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-2 disabled:opacity-30"
                           >
                             <FileText size={20}/>
                             Exportar PDF
@@ -1732,33 +1804,33 @@ export default function App() {
             )}
 
             {adminTab === 'stats' && (
-               <motion.div key="st" initial={{opacity:0, y:20}} animate={{opacity:1, y:0}} className="space-y-10">
+               <motion.div key="st" initial={{opacity:0, y:20}} animate={{opacity:1, y:0}} className="space-y-10 text-slate-800">
                   <header>
-                    <h2 className="text-3xl font-black text-slate-800 leading-none mb-3">Resumen de Elegibilidad</h2>
-                    <p className="text-slate-500 font-medium">Análisis de la base de datos actual para visitas técnicas.</p>
+                     <h2 className="text-3xl font-black text-white leading-none mb-3">Resumen de Elegibilidad</h2>
+                     <p className="text-emerald-100 font-medium opacity-90">Análisis de la base de datos actual para visitas técnicas.</p>
                   </header>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="bg-white p-8 rounded-[2rem] shadow-xl shadow-slate-200/50 border border-slate-100">
+                    <div className="bg-white p-8 rounded-[2rem] shadow-xl border border-slate-200 text-slate-800">
                       <div className="flex items-center gap-4 mb-6">
-                        <div className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl"><Users size={24}/></div>
+                        <div className="p-3 bg-slate-100 text-slate-700 border border-slate-200 rounded-2xl"><Users size={24}/></div>
                         <span className="text-xs font-black uppercase text-slate-400 tracking-widest">Estudiantes Totales</span>
                       </div>
-                      <div className="text-5xl font-black text-slate-800">2,078</div>
-                      <p className="text-emerald-500 font-bold text-xs mt-4 flex items-center gap-1"><Check size={14}/> Sincronizado con Supabase</p>
+                      <div className="text-5xl font-black text-amber-500">2,078</div>
+                      <p className="text-slate-500 font-bold text-xs mt-4 flex items-center gap-1"><Check size={14}/> Sincronizado con Supabase</p>
                     </div>
                     {availableVisits.map(v => (
-                       <div key={v.id} className="bg-white p-8 rounded-[2rem] shadow-xl shadow-slate-200/50 border border-slate-100">
+                       <div key={v.id} className="bg-white p-8 rounded-[2rem] shadow-xl border border-slate-200 text-slate-800">
                         <div className="flex items-center gap-4 mb-6">
-                          <div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl"><Calendar size={24}/></div>
-                          <span className="text-xs font-black uppercase text-slate-400 tracking-widest">{v.nombre}</span>
+                          <div className="p-3 bg-slate-100 text-slate-700 border border-slate-200 rounded-2xl"><Calendar size={24}/></div>
+                          <span className="text-xs font-black uppercase text-slate-400 tracking-widest truncate max-w-[200px]" title={v.nombre}>{v.nombre}</span>
                         </div>
                         <div className="text-5xl font-black text-slate-800">
-                          {allRegistrations.filter(r => r.visita_id === v.id).length}<span className="text-2xl text-slate-300">/{v.cupos_max}</span>
+                          {allRegistrations.filter(r => r.visita_id === v.id).length}<span className="text-2xl text-slate-350">/{v.cupos_max}</span>
                         </div>
-                        <div className="w-full bg-slate-100 h-2 rounded-full mt-6 overflow-hidden">
+                        <div className="w-full bg-slate-100 h-2 rounded-full mt-6 overflow-hidden border border-slate-200">
                           <div 
-                            className="bg-emerald-500 h-full rounded-full transition-all duration-1000" 
+                            className="bg-gradient-to-r from-emerald-500 to-amber-500 h-full rounded-full transition-all duration-1000" 
                             style={{
                               width: `${Math.min(100, (v.cupos_max > 0) 
                                 ? (allRegistrations.filter(r => r.visita_id === v.id).length / v.cupos_max) * 100 
@@ -1771,28 +1843,28 @@ export default function App() {
                   </div>
 
                   {/* Students Table for Stats */}
-                  <div className="bg-white rounded-[2rem] p-8 shadow-xl shadow-slate-200/50 border border-slate-100">
+                  <div className="bg-white rounded-[2rem] p-8 shadow-xl border border-slate-200 text-slate-850">
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
                        <div>
                          <h3 className="text-xl font-black text-slate-800">Base de Estudiantes</h3>
-                         <p className="text-sm text-slate-400 font-medium">Buscador global en tiempo real de registros estudiantiles.</p>
+                         <p className="text-xs text-slate-500 font-medium">Buscador global en tiempo real de registros estudiantiles.</p>
                        </div>
                        <div className="relative w-full md:w-96">
                          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
                          <input 
                            type="text" 
                            placeholder="Buscar por nombre o registro..."
-                           className="w-full h-12 pl-12 pr-4 bg-slate-50 border border-slate-200 rounded-xl outline-none font-medium focus:border-indigo-500 transition-all shadow-inner"
+                           className="w-full h-12 pl-12 pr-4 bg-slate-50 border border-slate-200 rounded-xl outline-none font-medium focus:border-emerald-500 focus:bg-white text-slate-800 transition-all shadow-inner"
                            value={adminStatsSearch}
                            onChange={(e) => setAdminStatsSearch(e.target.value)}
                          />
-                         {isAdminStatsLoading && <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-500 animate-spin" />}
+                         {isAdminStatsLoading && <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-500 animate-spin" />}
                        </div>
                     </div>
 
-                    <div className="overflow-x-auto border border-slate-50 rounded-2xl">
+                    <div className="overflow-x-auto border border-slate-100 rounded-2xl">
                        <table className="w-full text-left text-sm whitespace-nowrap">
-                          <thead className="bg-slate-50 text-slate-400 font-black uppercase text-[10px] tracking-widest">
+                          <thead className="bg-slate-50 text-slate-500 font-black uppercase text-[10px] tracking-widest border-b border-slate-200">
                              <tr>
                                 <th className="p-5">Estudiante</th>
                                 <th className="p-5">Registro</th>
@@ -1801,138 +1873,138 @@ export default function App() {
                                 <th className="p-5">Semestre / Carrera</th>
                              </tr>
                           </thead>
-                          <tbody className="divide-y divide-slate-50">
+                          <tbody className="divide-y divide-slate-100 bg-white">
                              {adminStatsStudents.map(s => (
-                                <tr key={s.registro} className="hover:bg-slate-50/50 transition-colors">
+                                <tr key={s.registro} className="hover:bg-slate-50/70 transition-colors border-b border-slate-100">
                                    <td className="p-5">
                                       <div className="font-bold text-slate-800">{s.nombre}</div>
-                                      <div className="text-[10px] text-slate-400 font-black uppercase tracking-tighter">CI: {s.ci || '---'}</div>
+                                      <div className="text-[10px] text-slate-450 font-black uppercase tracking-tighter">CI: {s.ci || '---'}</div>
                                    </td>
                                    <td className="p-5">
-                                      <div className="font-mono text-indigo-600 font-black text-xs bg-indigo-50 px-2 py-1 rounded-lg inline-block">{s.registro}</div>
+                                      <div className="font-mono text-amber-600 font-black text-xs bg-slate-50 px-2.5 py-1.5 rounded-lg inline-block border border-slate-200">{s.registro}</div>
                                    </td>
                                    <td className="p-5">
                                       <div className="flex flex-col">
-                                         <span className="font-medium text-slate-600 flex items-center gap-2"><Mail size={12} className="text-slate-300"/> {s.correo || 'S/E'}</span>
+                                         <span className="font-medium text-slate-700 flex items-center gap-2"><Mail size={12} className="text-slate-450"/> {s.correo || 'S/E'}</span>
                                          <span className="text-xs text-slate-400 font-bold">{s.telefono || 'S/T'}</span>
                                       </div>
                                    </td>
                                    <td className="p-5">
-                                      <div className="font-bold text-slate-800">{s.celular || '---'}</div>
+                                      <div className="font-bold text-slate-700">{s.celular || '---'}</div>
                                    </td>
                                    <td className="p-5">
                                       <div className="font-bold text-slate-700 truncate max-w-[200px]">{s.carrera}</div>
-                                      <div className="text-[10px] font-black text-indigo-400 uppercase">Nivel: {s.niv || s.semestre_activo || '?'}</div>
+                                      <div className="text-[10px] font-black text-amber-600 uppercase">Nivel: {s.niv || s.semestre_activo || '?'}</div>
                                    </td>
                                 </tr>
                              ))}
                              {adminStatsStudents.length === 0 && !isAdminStatsLoading && (
-                               <tr><td colSpan={5} className="p-10 text-center font-bold text-slate-300 italic">No hay estudiantes que correspondan a la búsqueda.</td></tr>
+                               <tr><td colSpan={5} className="p-10 text-center font-bold text-slate-400 italic">No hay estudiantes que correspondan a la búsqueda.</td></tr>
                              )}
                           </tbody>
                        </table>
                     </div>
                     <div className="mt-6 flex justify-center">
-                       <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Mostrando resultados limitados (Base de 2,078 registros)</p>
+                       <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Mostrando resultados limitados (Base de 2,078 registros)</p>
                     </div>
                   </div>
                </motion.div>
             )}
 
             {adminTab === 'registrations' && (
-              <motion.div key="reg" initial={{opacity:0, y:20}} animate={{opacity:1, y:0}} className="bg-white rounded-3xl p-8 shadow-xl border border-slate-100">
-                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10 pb-8 border-b border-slate-50">
-                    <div>
-                      <h2 className="text-2xl font-black text-slate-800 mb-1">Gestión de Inscritos</h2>
-                      <p className="text-sm text-slate-400 font-medium">Listado en tiempo real de los registros de estudiantes.</p>
-                    </div>
-                    <div className="flex flex-wrap gap-4">
-                      <select 
-                        value={filterVisit} 
-                        onChange={(e) => setFilterVisit(e.target.value)}
-                        className="h-12 px-4 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-sm text-slate-600 focus:border-indigo-500 transition-all"
-                      >
-                        <option value="all">Todas las visitas</option>
-                        {availableVisits.map(v => <option key={v.id} value={v.id}>{v.nombre}</option>)}
-                      </select>
-                      <button onClick={exportConsolidated} className="h-12 px-6 bg-slate-800 text-white rounded-xl font-bold text-sm flex items-center gap-2 hover:bg-slate-700 transition-all">
-                        <Download size={18}/> Exportar CSV
-                      </button>
-                    </div>
-                 </div>
+              <motion.div key="reg" initial={{opacity:0, y:20}} animate={{opacity:1, y:0}} className="bg-white rounded-[2rem] p-8 shadow-xl border border-slate-200 text-slate-800">
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10 pb-8 border-b border-slate-100">
+                     <div>
+                        <h2 className="text-2xl font-black text-slate-850 mb-1">Gestión de Inscritos</h2>
+                        <p className="text-xs text-slate-500 font-medium">Listado en tiempo real de los registros de estudiantes.</p>
+                     </div>
+                     <div className="flex flex-wrap gap-4">
+                       <select 
+                         value={filterVisit} 
+                         onChange={(e) => setFilterVisit(e.target.value)}
+                         className="h-12 px-4 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-sm text-slate-700 focus:border-emerald-500 transition-all cursor-pointer"
+                       >
+                         <option value="all">Todas las visitas</option>
+                         {availableVisits.map(v => <option key={v.id} value={v.id}>{v.nombre}</option>)}
+                       </select>
+                       <button onClick={exportConsolidated} className="h-12 px-6 bg-[#01241f] text-white rounded-xl font-bold text-sm flex items-center gap-2 hover:scale-[1.02] active:scale-95 transition-all shadow-lg active:bg-slate-900 border border-transparent">
+                         <Download size={18}/> Exportar CSV
+                       </button>
+                     </div>
+                  </div>
 
-                 <div className="relative mb-6">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
-                    <input 
-                      type="text" 
-                      placeholder="Filtrar por nombre o registro..."
-                      className="w-full h-12 pl-12 pr-4 bg-slate-50 border border-slate-200 rounded-xl outline-none font-medium focus:border-indigo-500 transition-all"
-                      value={filterQuery}
-                      onChange={(e) => setFilterQuery(e.target.value)}
-                    />
-                 </div>
+                  <div className="relative mb-6">
+                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+                     <input 
+                       type="text" 
+                       placeholder="Filtrar por nombre o registro..."
+                       className="w-full h-12 pl-12 pr-4 bg-slate-50 border border-slate-200 rounded-xl outline-none font-medium focus:border-emerald-500 focus:bg-white text-slate-800 transition-all shadow-inner"
+                       value={filterQuery}
+                       onChange={(e) => setFilterQuery(e.target.value)}
+                     />
+                  </div>
 
-                 <div className="overflow-hidden border border-slate-100 rounded-2xl">
-                    <table className="w-full text-left text-sm">
-                       <thead className="bg-slate-50 text-slate-400 font-black uppercase text-[10px] tracking-widest">
-                          <tr>
-                             <th className="p-4">Estudiante</th>
-                             <th className="p-4">Registro</th>
-                             <th className="p-4">Visita Técnica</th>
-                             <th className="p-4 text-center">Seguro/EPP</th>
-                             <th className="p-4">Ref</th>
-                             <th className="p-4 text-right">Detalles</th>
-                          </tr>
-                       </thead>
-                       <tbody className="divide-y divide-slate-50">
-                          {filteredRegistrations.map(r => (
-                             <tr key={r.id} className={`hover:bg-slate-50/50 transition-colors ${r.estado === 'ANULADO' ? 'bg-rose-50/30 text-slate-400 opacity-75' : ''}`}>
-                                <td className="p-4">
-                                   <div className={`font-bold ${r.estado === 'ANULADO' ? 'line-through text-slate-400' : 'text-slate-800'}`}>{r.nombre_estudiante}</div>
-                                   <div className="text-[10px] text-slate-400 font-black uppercase">{r.estudiantes?.carrera || 'Carrera N/D'}</div>
-                                </td>
-                                <td className="p-4 font-mono text-slate-500">{r.estudiante_registro}</td>
-                                <td className="p-4">
-                                   <div className={`font-bold ${r.estado === 'ANULADO' ? 'line-through text-slate-400' : 'text-indigo-600'}`}>{r.nombre_visita}</div>
-                                   <div className="text-[10px] text-slate-400">
-                                      {new Date(r.fecha_inscripcion!).toLocaleDateString()}
-                                      {r.estado === 'ANULADO' && (
-                                         <span className="ml-2 px-1.5 py-0.5 bg-rose-100 text-rose-700 rounded text-[9px] font-black uppercase tracking-wider">ANULADO</span>
-                                      )}
-                                   </div>
-                                </td>
-                                <td className="p-4">
-                                   <div className="flex justify-center gap-2">
-                                      <span title="Seguro" className={`w-2.5 h-2.5 rounded-full ${r.tiene_seguro ? 'bg-emerald-500' : 'bg-rose-500'}`}></span>
-                                      <span title="EPP" className={`w-2.5 h-2.5 rounded-full ${r.tiene_epp ? 'bg-emerald-500' : 'bg-indigo-500'}`}></span>
-                                   </div>
-                                </td>
-                                <td className="p-4 font-bold text-slate-600">{r.contacto_referencia || '---'}</td>
-                                <td className="p-4 text-right">
-                                   <div className="flex justify-end items-center gap-2">
-                                      {r.comprobante_seguro_url && (
-                                        <a 
-                                          href={r.comprobante_seguro_url} 
-                                          target="_blank" 
-                                          rel="noopener noreferrer" 
-                                          className="p-2 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100 transition-colors"
-                                          title="Ver Seguro"
-                                        >
-                                          <ShieldCheck size={18}/>
-                                        </a>
-                                      )}
-                                      <button onClick={() => setViewRegDetails(r)} className="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors"><FileText size={18}/></button>
-                                      <button onClick={() => handleDeleteRegistration(r.id!)} className="p-2 text-slate-300 hover:text-rose-500 transition-colors"><Trash2 size={18}/></button>
-                                   </div>
-                                </td>
-                             </tr>
-                          ))}
-                          {filteredRegistrations.length === 0 && (
-                            <tr><td colSpan={6} className="p-10 text-center font-bold text-slate-300 italic">No hay registros que coincidan con los filtros.</td></tr>
-                          )}
-                       </tbody>
-                    </table>
-                 </div>
+                  <div className="overflow-hidden border border-slate-100 rounded-2xl">
+                     <table className="w-full text-left text-sm">
+                        <thead className="bg-slate-50 text-slate-500 font-black uppercase text-[10px] tracking-widest border-b border-slate-200">
+                           <tr>
+                              <th className="p-4 pl-6">Estudiante</th>
+                              <th className="p-4">Registro</th>
+                              <th className="p-4">Visita Técnica</th>
+                              <th className="p-4 text-center">Seguro/EPP</th>
+                              <th className="p-4">Ref</th>
+                              <th className="p-4 text-right pr-6">Detalles</th>
+                           </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 bg-white">
+                           {filteredRegistrations.map(r => (
+                              <tr key={r.id} className={`hover:bg-slate-50/70 transition-colors ${r.estado === 'ANULADO' ? 'bg-rose-50/50 text-rose-600/60 opacity-55 font-normal' : ''}`}>
+                                 <td className="p-4 pl-6">
+                                    <div className={`font-bold ${r.estado === 'ANULADO' ? 'line-through text-rose-400/80 font-normal' : 'text-slate-800'}`}>{r.nombre_estudiante}</div>
+                                    <div className="text-[10px] text-slate-500 font-black uppercase tracking-wider mt-0.5">{r.estudiantes?.carrera || 'Carrera N/D'}</div>
+                                 </td>
+                                 <td className="p-4 font-mono text-amber-600 font-bold">{r.estudiante_registro}</td>
+                                 <td className="p-4">
+                                    <div className={`font-bold ${r.estado === 'ANULADO' ? 'line-through text-rose-450/45 font-normal' : 'text-slate-700'}`}>{r.nombre_visita}</div>
+                                    <div className="text-[10px] text-slate-400 font-medium">
+                                       {new Date(r.fecha_inscripcion!).toLocaleDateString()}
+                                       {r.estado === 'ANULADO' && (
+                                          <span className="ml-2 px-1.5 py-0.5 bg-rose-100 border border-rose-200 text-rose-700 rounded text-[9px] font-black uppercase tracking-wider">ANULADO</span>
+                                       )}
+                                    </div>
+                                 </td>
+                                 <td className="p-4">
+                                    <div className="flex justify-center gap-2">
+                                       <span title="Seguro" className={`w-2.5 h-2.5 rounded-full ${r.tiene_seguro ? 'bg-emerald-500' : 'bg-rose-500'}`}></span>
+                                       <span title="EPP" className={`w-2.5 h-2.5 rounded-full ${r.tiene_epp ? 'bg-emerald-500' : 'bg-slate-300'}`}></span>
+                                    </div>
+                                 </td>
+                                 <td className="p-4 font-bold text-slate-600">{r.contacto_referencia || '---'}</td>
+                                 <td className="p-4 text-right pr-6">
+                                    <div className="flex justify-end items-center gap-2">
+                                       {r.comprobante_seguro_url && (
+                                         <a 
+                                           href={r.comprobante_seguro_url} 
+                                           target="_blank" 
+                                           rel="noopener noreferrer" 
+                                           className="p-2 bg-slate-50 text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-100 hover:text-slate-850 transition-colors"
+                                           title="Ver Seguro"
+                                         >
+                                           <ShieldCheck size={18}/>
+                                         </a>
+                                       )}
+                                       <button onClick={() => setViewRegDetails(r)} className="p-2 bg-slate-50 text-amber-600 border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors"><FileText size={18}/></button>
+                                       <button onClick={() => handleDeleteRegistration(r.id!)} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"><Trash2 size={18}/></button>
+                                    </div>
+                                 </td>
+                              </tr>
+                           ))}
+                           {filteredRegistrations.length === 0 && (
+                             <tr><td colSpan={6} className="p-10 text-center font-bold text-slate-450 italic">No hay registros que coincidan con los filtros.</td></tr>
+                           )}
+                        </tbody>
+                     </table>
+                  </div>
               </motion.div>
             )}
 
@@ -1944,20 +2016,20 @@ export default function App() {
                     <input 
                       type="text" 
                       placeholder="Investigar Registro o Nombre..."
-                      className="w-full h-16 pl-12 pr-4 bg-white border-2 border-slate-100 rounded-3xl shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 outline-none transition-all text-xl font-medium"
+                      className="w-full h-16 pl-12 pr-4 bg-white border border-slate-200 rounded-3xl outline-none font-medium focus:border-emerald-500 text-slate-800 transition-all text-xl shadow-xl"
                       value={searchTerm}
                       onChange={(e) => setSearchState(e.target.value)}
                     />
                   </div>
                   <AnimatePresence>
                     {dbStudents.length > 0 && (
-                      <motion.div initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} exit={{opacity:0}} className="absolute top-full left-0 right-0 mt-3 bg-white border border-slate-100 rounded-3xl shadow-2xl z-50 overflow-hidden">
+                      <motion.div initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} exit={{opacity:0}} className="absolute top-full left-0 right-0 mt-3 bg-white border border-slate-200 rounded-3xl shadow-2xl z-50 overflow-hidden">
                         {dbStudents.map(s => (
-                          <button key={s.registro} onClick={() => { setSelectedStudent(s); setDbStudents([]); setSearchState(''); }} className="w-full p-5 flex items-center gap-5 hover:bg-indigo-50/50 transition-colors border-b last:border-none border-slate-50 text-left">
-                            <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 font-black text-lg">{s.niv || (s.semestre_activo ? s.semestre_activo.split('-')[0] : '?')}</div>
+                          <button key={s.registro} onClick={() => { setSelectedStudent(s); setDbStudents([]); setSearchState(''); }} className="w-full p-5 flex items-center gap-5 hover:bg-slate-50 transition-colors border-b last:border-none border-slate-100 text-left">
+                            <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center text-amber-600 font-black text-lg">{s.niv || (s.semestre_activo ? s.semestre_activo.split('-')[0] : '?')}</div>
                             <div>
                               <div className="font-bold text-slate-800">{s.nombre}</div>
-                              <div className="text-xs text-slate-500 font-mono">ID: {s.registro} | {s.carrera}</div>
+                              <div className="text-xs text-slate-400 font-mono">ID: {s.registro} | {s.carrera}</div>
                             </div>
                           </button>
                         ))}
@@ -1967,73 +2039,73 @@ export default function App() {
                 </section>
 
                 {selectedStudent ? (
-                  <motion.div initial={{opacity:0, scale:0.95}} animate={{opacity:1, scale:1}} className="bg-white rounded-[2.5rem] p-10 shadow-2xl shadow-indigo-100 border border-slate-100">
+                  <motion.div initial={{opacity:0, scale:0.95}} animate={{opacity:1, scale:1}} className="bg-white rounded-[2.5rem] p-10 shadow-xl border border-slate-200 text-slate-800">
                     <div className="flex justify-between items-start mb-12">
                       <div className="flex gap-8 items-center">
-                        <div className="w-24 h-24 rounded-[2rem] bg-indigo-600 flex items-center justify-center text-white shadow-xl shadow-indigo-200"><User size={48} /></div>
+                        <div className="w-24 h-24 rounded-[2rem] bg-gradient-to-br from-emerald-600 to-teal-850 flex items-center justify-center text-white shadow-xl border border-emerald-400/25"><User size={48} /></div>
                         <div>
-                          <h2 className="text-3xl font-black text-slate-800 tracking-tighter mb-2">{selectedStudent.nombre}</h2>
+                          <h2 className="text-3xl font-black text-slate-900 tracking-tighter mb-2">{selectedStudent.nombre}</h2>
                           <div className="flex items-center gap-3">
-                            <span className="px-4 py-1.5 bg-indigo-50 text-indigo-600 rounded-full text-xs font-black uppercase tracking-widest">{selectedStudent.carrera}</span>
+                            <span className="px-4 py-1.5 bg-slate-50 border border-slate-200 text-slate-700 rounded-full text-xs font-black uppercase tracking-widest">{selectedStudent.carrera}</span>
                             <span className="w-1.5 h-1.5 bg-slate-200 rounded-full"></span>
-                            <span className="text-sm font-bold text-slate-400">ID Estudiantil: {selectedStudent.registro}</span>
+                            <span className="text-sm font-bold text-slate-450">ID Estudiantil: {selectedStudent.registro}</span>
                           </div>
                         </div>
                       </div>
-                      <button onClick={() => setSelectedStudent(null)} className="p-3 bg-slate-50 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-2xl transition-all"><XCircle size={32}/></button>
+                      <button onClick={() => setSelectedStudent(null)} className="p-3 bg-slate-50 text-slate-400 hover:text-rose-650 hover:bg-rose-50 rounded-2xl border border-slate-200 transition-all"><XCircle size={32}/></button>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-                      <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 flex items-center gap-5 group hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 transition-all">
-                         <div className="p-4 bg-white rounded-2xl text-indigo-600 shadow-sm transition-transform group-hover:scale-110"><IdCard size={24}/></div>
+                      <div className="p-6 bg-slate-50 border border-slate-200 rounded-3xl flex items-center gap-5 group hover:bg-white hover:shadow-md hover:border-slate-350 transition-all">
+                         <div className="p-4 bg-slate-100 rounded-2xl text-amber-600 border border-slate-250 shadow-sm transition-transform group-hover:scale-110"><IdCard size={24}/></div>
                          <div>
-                           <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-0.5">Carnet CI</p>
+                           <p className="text-[10px] font-black uppercase text-slate-450 tracking-widest mb-0.5">Carnet CI</p>
                            <p className="text-lg font-black text-slate-800">{selectedStudent.ci || '---'}</p>
                          </div>
                       </div>
-                      <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 flex items-center gap-5 group hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 transition-all">
-                         <div className="p-4 bg-white rounded-2xl text-indigo-600 shadow-sm transition-transform group-hover:scale-110"><Database size={24}/></div>
+                      <div className="p-6 bg-slate-50 border border-slate-200 rounded-3xl flex items-center gap-5 group hover:bg-white hover:shadow-md hover:border-slate-350 transition-all">
+                         <div className="p-4 bg-slate-100 rounded-2xl text-amber-600 border border-slate-250 shadow-sm transition-transform group-hover:scale-110"><Database size={24}/></div>
                          <div>
-                           <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-0.5">Registro</p>
-                           <p className="text-lg font-black text-indigo-600">{selectedStudent.registro}</p>
+                           <p className="text-[10px] font-black uppercase text-slate-450 tracking-widest mb-0.5">Registro</p>
+                           <p className="text-lg font-black text-amber-600">{selectedStudent.registro}</p>
                          </div>
                       </div>
-                      <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 flex items-center gap-5 group hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 transition-all">
-                         <div className="p-4 bg-white rounded-2xl text-indigo-600 shadow-sm transition-transform group-hover:scale-110"><Phone size={24}/></div>
+                      <div className="p-6 bg-slate-50 border border-slate-200 rounded-3xl flex items-center gap-5 group hover:bg-white hover:shadow-md hover:border-slate-350 transition-all">
+                         <div className="p-4 bg-slate-100 rounded-2xl text-amber-600 border border-slate-250 shadow-sm transition-transform group-hover:scale-110"><Phone size={24}/></div>
                          <div>
-                           <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-0.5">Contacto</p>
+                           <p className="text-[10px] font-black uppercase text-slate-450 tracking-widest mb-0.5">Contacto</p>
                            <p className="text-lg font-black text-slate-800">{selectedStudent.celular || selectedStudent.telefono || '---'}</p>
                          </div>
                       </div>
-                      <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 flex items-center gap-5 group hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 transition-all">
-                         <div className="p-4 bg-white rounded-2xl text-indigo-600 shadow-sm transition-transform group-hover:scale-110"><GraduationCap size={24}/></div>
+                      <div className="p-6 bg-slate-50 border border-slate-200 rounded-3xl flex items-center gap-5 group hover:bg-white hover:shadow-md hover:border-slate-350 transition-all">
+                         <div className="p-4 bg-slate-100 rounded-2xl text-amber-600 border border-slate-250 shadow-sm transition-transform group-hover:scale-110"><GraduationCap size={24}/></div>
                          <div>
-                           <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-0.5">Nivel Académico</p>
+                           <p className="text-[10px] font-black uppercase text-slate-450 tracking-widest mb-0.5">Nivel Académico</p>
                            <p className="text-lg font-black text-slate-800">{selectedStudent.niv || selectedStudent.nivel || '?'}</p>
                          </div>
                       </div>
-                      <div className="md:col-span-2 lg:col-span-4 p-6 bg-indigo-50 rounded-3xl border border-indigo-100 flex items-center gap-5">
-                         <div className="p-4 bg-white rounded-2xl text-indigo-600 shadow-sm"><Mail size={24}/></div>
+                      <div className="md:col-span-2 lg:col-span-4 p-6 bg-slate-50 border border-slate-200 rounded-3xl flex items-center gap-5">
+                         <div className="p-4 bg-slate-100 rounded-2xl text-amber-600 border border-slate-200 shadow-sm"><Mail size={24}/></div>
                          <div className="flex-1">
-                           <p className="text-[10px] font-black uppercase text-indigo-400 tracking-widest mb-0.5">Correo Electrónico Institucional</p>
-                           <p className="text-lg font-black text-slate-800">{selectedStudent.correo || `${selectedStudent.registro}@est.edu.bo`}</p>
+                           <p className="text-[10px] font-black uppercase text-slate-450 tracking-widest mb-0.5">Correo Electrónico Institucional</p>
+                           <p className="text-lg font-black text-slate-700">{selectedStudent.correo || `${selectedStudent.registro}@est.edu.bo`}</p>
                          </div>
                       </div>
                     </div>
 
-                    <div className="pt-10 border-t border-slate-100">
-                      <h3 className="text-xs font-black uppercase text-slate-400 tracking-widest mb-6 flex items-center gap-2">
-                        <CheckCircle2 size={16} className="text-indigo-400" /> 
+                    <div className="pt-10 border-t border-slate-200">
+                      <h3 className="text-xs font-black uppercase text-slate-700 tracking-widest mb-6 flex items-center gap-2">
+                        <CheckCircle2 size={16} className="text-emerald-600" /> 
                         Validación de Elegibilidad para Visitas
                       </h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                          {availableVisits.map(v => {
                             const isEligible = (selectedStudent.niv || 0) >= v.min_nivel;
                             return (
-                              <div key={v.id} className={`p-6 rounded-[2rem] border-2 transition-all ${isEligible ? 'bg-emerald-50/50 border-emerald-100' : 'bg-rose-50/50 border-rose-100'}`}>
+                              <div key={v.id} className={`p-6 rounded-[2rem] border transition-all ${isEligible ? 'bg-emerald-50/80 border-emerald-250 text-slate-800' : 'bg-rose-50/80 border-rose-250 text-slate-800'}`}>
                                  <div className="flex justify-between items-start mb-4">
-                                   <p className="text-[10px] font-black uppercase text-slate-400 tracking-tighter leading-tight max-w-[70%]">{v.nombre}</p>
-                                   <div className={`p-1.5 rounded-lg ${isEligible ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}`}>
+                                   <p className={`text-[10px] font-black uppercase tracking-tighter leading-tight max-w-[70%] ${isEligible ? 'text-emerald-950' : 'text-rose-950'}`}>{v.nombre}</p>
+                                   <div className={`p-1.5 rounded-lg border ${isEligible ? 'bg-emerald-100 border-emerald-300 text-emerald-700' : 'bg-rose-100 border border-rose-300 text-rose-700'}`}>
                                      {isEligible ? <Check size={14}/> : <XCircle size={14}/>}
                                    </div>
                                  </div>
@@ -2042,7 +2114,7 @@ export default function App() {
                                      <p className={`text-xl font-black ${isEligible ? 'text-emerald-700' : 'text-rose-700'} tracking-tighter`}>
                                        {isEligible ? 'HABILITADO' : ' RESTRINGIDO'}
                                      </p>
-                                     <p className="text-[10px] font-bold text-slate-400 uppercase mt-0.5">Mínimo Nivel: {v.min_nivel}</p>
+                                     <p className={`text-[10px] font-bold uppercase mt-0.5 ${isEligible ? 'text-emerald-600/70' : 'text-rose-600/70'}`}>Mínimo Nivel: {v.min_nivel}</p>
                                    </div>
                                  </div>
                               </div>
@@ -2052,26 +2124,29 @@ export default function App() {
                     </div>
                   </motion.div>
                 ) : (
-                  <div className="py-20 text-center border-2 border-dashed border-slate-100 rounded-[2.5rem]"><Search className="mx-auto text-slate-200 mb-4" size={48}/><p className="text-slate-300 font-bold italic">Seleccione un estudiante para validar su perfil en tiempo real.</p></div>
+                  <div className="py-20 text-center border border-dashed border-slate-200 bg-white shadow-xl rounded-[2.5rem]">
+                    <Search className="mx-auto text-slate-300 mb-4 animate-pulse" size={48} />
+                    <p className="text-slate-500 font-bold italic">Seleccione un estudiante para validar su perfil en tiempo real o use el buscador lateral.</p>
+                  </div>
                 )}
               </motion.div>
             )}
 
             {adminTab === 'sync' && (
               <motion.div key="sy" initial={{opacity:0, x:-20}} animate={{opacity:1, x:0}} className="space-y-8">
-                <div className="bg-white rounded-3xl p-8 shadow-xl border border-slate-100 overflow-hidden">
-                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 pb-8 border-b border-slate-50">
+                <div className="bg-white rounded-[2rem] p-8 shadow-xl border border-slate-200 text-slate-800 overflow-hidden animate-fade-in">
+                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 pb-8 border-b border-slate-200">
                     <div className="flex flex-wrap gap-10">
-                      <div className="flex flex-col"><span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Carga A</span><span className="text-xl font-black text-slate-700">{baseStudents.length}</span></div>
-                      <div className="flex flex-col"><span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Carga B</span><span className="text-xl font-black text-slate-700">{compStudents.length}</span></div>
-                      <div className="flex flex-col"><span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">Unificados</span><span className="text-2xl font-black text-indigo-600">{finalStudents.length}</span></div>
+                      <div className="flex flex-col"><span className="text-[10px] font-black text-slate-450 uppercase tracking-widest mb-1">Carga A</span><span className="text-xl font-black text-slate-800">{baseStudents.length}</span></div>
+                      <div className="flex flex-col"><span className="text-[10px] font-black text-slate-450 uppercase tracking-widest mb-1">Carga B</span><span className="text-xl font-black text-slate-800">{compStudents.length}</span></div>
+                      <div className="flex flex-col"><span className="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-1">Unificados</span><span className="text-2xl font-black text-amber-600">{finalStudents.length}</span></div>
                     </div>
                     
                     <div className="flex items-center gap-3">
-                      <button onClick={executeMerge} className="h-12 px-6 bg-indigo-600 text-white rounded-xl font-black text-sm hover:scale-105 transition-all shadow-lg flex items-center gap-2 disabled:opacity-50">
+                      <button onClick={executeMerge} className="h-12 px-6 bg-slate-100 border border-slate-200 text-slate-700 rounded-xl font-black text-sm hover:bg-slate-200 hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-2 shadow-sm disabled:opacity-50">
                         <Layers size={18}/> COMBINAR
                       </button>
-                      <button disabled={isSyncing || finalStudents.length === 0} onClick={handleSync} className="h-12 px-8 bg-emerald-600 text-white rounded-xl font-black text-sm hover:bg-emerald-700 transition-all flex items-center gap-2 shadow-lg disabled:opacity-50">
+                      <button disabled={isSyncing || finalStudents.length === 0} onClick={handleSync} className="h-12 px-8 bg-gradient-to-r from-emerald-600 to-teal-700 text-white rounded-xl font-black text-sm hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-2 shadow-lg shadow-emerald-900/20 disabled:opacity-50">
                         {isSyncing ? <Loader2 className="animate-spin" size={18}/> : <Database size={18}/>}
                         SYNC ({finalStudents.length})
                       </button>
@@ -2079,21 +2154,21 @@ export default function App() {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
-                    <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
-                       <h4 className="font-black text-xs uppercase text-slate-400 mb-4 flex items-center gap-2"><Upload size={14}/> Archivo Base (.TXT)</h4>
+                    <div className="p-6 bg-slate-50 border border-slate-200 rounded-2xl">
+                       <h4 className="font-black text-xs uppercase text-slate-700 mb-4 flex items-center gap-2"><Upload size={14} className="text-emerald-600"/> Archivo Base (.TXT)</h4>
                        <input type="file" accept=".txt" className="hidden" ref={fileInputBaseRef} onChange={handleFileUpload('base')}/>
-                       <button onClick={() => fileInputBaseRef.current?.click()} className="w-full py-3 bg-white border-2 border-indigo-100 text-indigo-600 rounded-xl font-bold hover:bg-indigo-50 transition-all">Seleccionar Archivo A</button>
+                       <button onClick={() => fileInputBaseRef.current?.click()} className="w-full py-3 bg-white border-2 border-slate-200 hover:border-slate-300 text-emerald-700 hover:text-emerald-800 rounded-xl font-bold hover:bg-slate-50 transition-all shadow-sm">Seleccionar Archivo A</button>
                     </div>
-                    <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
-                       <h4 className="font-black text-xs uppercase text-slate-400 mb-4 flex items-center gap-2"><FileText size={14}/> Archivo Complemento (.TXT)</h4>
+                    <div className="p-6 bg-slate-50 border border-slate-200 rounded-2xl">
+                       <h4 className="font-black text-xs uppercase text-slate-700 mb-4 flex items-center gap-2"><FileText size={14} className="text-emerald-600"/> Archivo Complemento (.TXT)</h4>
                        <input type="file" accept=".txt" className="hidden" ref={fileInputCompRef} onChange={handleFileUpload('comp')}/>
-                       <button onClick={() => fileInputCompRef.current?.click()} className="w-full py-3 bg-white border-2 border-indigo-100 text-indigo-600 rounded-xl font-bold hover:bg-indigo-50 transition-all">Seleccionar Archivo B</button>
+                       <button onClick={() => fileInputCompRef.current?.click()} className="w-full py-3 bg-white border-2 border-slate-200 hover:border-slate-300 text-emerald-700 hover:text-emerald-800 rounded-xl font-bold hover:bg-slate-50 transition-all shadow-sm">Seleccionar Archivo B</button>
                     </div>
                   </div>
 
                   {syncStatus === 'success' && (
-                    <div className="p-4 bg-emerald-50 text-emerald-800 rounded-xl border border-emerald-100 mb-8 font-bold flex items-center gap-3">
-                      <Check size={20}/> Carga Exitosa de {lastSyncCount} registros
+                    <div className="p-4 bg-emerald-50 text-emerald-800 rounded-xl border border-emerald-200 mb-8 font-bold flex items-center gap-3">
+                      <Check size={20} className="text-emerald-600"/> Carga Exitosa de {lastSyncCount} registros
                     </div>
                   )}
 

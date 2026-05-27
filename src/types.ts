@@ -7,6 +7,8 @@ export interface Student {
   id: string; // Registro
   name: string;
   level: number;
+  id_ticket?: string;
+  registro_universitario?: string;
 }
 
 export interface DatabaseStudent {
@@ -23,6 +25,11 @@ export interface DatabaseStudent {
   telefono?: string;
   celular?: string;
   isExternal?: boolean;
+  id_ticket?: string;
+  registro_universitario?: string;
+  cedula_identidad?: string;
+  nombre_completo?: string;
+  nivel_semestre?: number | string;
 }
 
 export interface TechnicalVisit {
