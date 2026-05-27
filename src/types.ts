@@ -22,6 +22,7 @@ export interface DatabaseStudent {
   correo?: string; // New field for complementary data
   telefono?: string;
   celular?: string;
+  isExternal?: boolean;
 }
 
 export interface TechnicalVisit {
@@ -47,6 +48,8 @@ export interface Registration {
   tiene_epp?: boolean;
   problema_salud?: string;
   contacto_referencia?: string;
+  estado?: string;
+  motivo_anulacion?: string;
 }
 
 export interface CompanyRequirement {

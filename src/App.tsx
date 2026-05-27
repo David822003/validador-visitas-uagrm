@@ -3,7 +3,7 @@ import {
   Search, MapPin, Building2, CheckCircle2, XCircle, 
   GraduationCap, User, Upload, Database, Loader2, 
   Check, AlertCircle, RefreshCw, FileText, Layers,
-  LayoutGrid, LogOut, ClipboardList, ShieldCheck, Mail, Calendar, Users, Filter, Download, Trash2, Lock, ArrowLeft, Plus, IdCard, Phone, Eye
+  LayoutGrid, LogOut, ClipboardList, ShieldCheck, Mail, Calendar, Users, Filter, Download, Trash2, Lock, ArrowLeft, Plus, IdCard, Phone, Eye, AlertTriangle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { DatabaseStudent, VISITS_REQUIREMENTS, TechnicalVisit, Registration } from './types';
@@ -88,7 +88,13 @@ export default function App() {
   // Student View State
   const [availableVisits, setAvailableVisits] = useState<TechnicalVisit[]>([]);
   const [myRegistrations, setMyRegistrations] = useState<string[]>([]); // Array of visit IDs
+  const [canceledRegistrations, setCanceledRegistrations] = useState<string[]>([]); // Canceled visit IDs
   const [isBooking, setIsBooking] = useState<string | null>(null);
+
+  // Cancellation State
+  const [showCancelModal, setShowCancelModal] = useState<string | null>(null); // visitId to cancel
+  const [cancelReason, setCancelReason] = useState('');
+  const [isCanceling, setIsCanceling] = useState(false);
 
   // New Registration Form State
   const [showRegModal, setShowRegModal] = useState<string | null>(null); // visitId
@@ -219,33 +225,87 @@ export default function App() {
 
     // Student login path
     try {
+      const input = loginId.trim();
+      if (!input) {
+        setLoginError('Por favor ingrese su identificación.');
+        setIsLoggingIn(false);
+        return;
+      }
+
+      // Paso 1 (Buscar Usuario): Buscar coincidencia en número de registro o número de ticket en la tabla inscripciones_congreso
       const { data, error } = await supabase
-        .from('estudiantes')
+        .from('inscripciones_congreso')
         .select('*')
-        .eq('registro', loginId)
-        .maybeSingle();
+        .or(`registro_universitario.eq."${input}",id_ticket.eq."${input}"`);
 
-      if (error || !data) {
-        setLoginError('No se encontró el estudiante. Verifique su Registro.');
-      } else {
-        // CI Logic: Only compare numbers, ignore extensions like -SCZ
-        const cleanedInputCI = loginPass.split('-')[0].trim();
-        const cleanedDbCI = (data.ci || '').split('-')[0].trim();
+      if (error) {
+        console.error("Supabase query error:", error);
+        throw error;
+      }
 
-        if (cleanedInputCI === cleanedDbCI && cleanedInputCI !== '') {
-          setCurrentStudent(data);
-          setUserRole('student');
-          // Fetch student registrations
-          const { data: regs } = await supabase
-            .from('inscripciones')
-            .select('visita_id')
-            .eq('estudiante_registro', data.registro);
-          if (regs) setMyRegistrations(regs.map((r: any) => r.visita_id));
-        } else {
-          setLoginError('Cédula de Identidad incorrecta.');
+      if (!data || data.length === 0) {
+        setLoginError('No se encuentra inscrito en el congreso. Por favor, asegúrese de completar su inscripción general primero.');
+        setIsLoggingIn(false);
+        return;
+      }
+
+      const match = data[0];
+      const enteredPassword = loginPass.trim();
+      const dbPassword = (match.cedula_identidad || '').trim();
+
+      // Paso 2 (Validar Contraseña): Verificar que la Contraseña sea exactamente igual a la cedula_identidad de la fila
+      if (enteredPassword !== dbPassword) {
+        setLoginError('No se encuentra inscrito en el congreso. Por favor, asegúrese de completar su inscripción general primero.');
+        setIsLoggingIn(false);
+        return;
+      }
+
+      let fetchedNiv: number | undefined = undefined;
+      let isExternal = true;
+
+      const identifierForLocal = match.registro_universitario || input;
+      if (identifierForLocal) {
+        const { data: localStudentData, error: localErr } = await supabase
+          .from('estudiantes')
+          .select('niv')
+          .eq('registro', identifierForLocal)
+          .maybeSingle();
+        
+        if (!localErr && localStudentData) {
+          fetchedNiv = localStudentData.niv;
+          isExternal = false;
         }
       }
+
+      // Map to standard DatabaseStudent model
+      const studentData: DatabaseStudent = {
+        registro: match.registro_universitario || match.id_ticket || '',
+        nombre: match.nombre || match.nombre_completo || 'Asistente',
+        carrera: match.carrera || 'Ingeniería Civil',
+        semestre_activo: match.semestre_activo || '1-2025',
+        ci: match.cedula_identidad || '',
+        obs: match.id_ticket || '',
+        lugar: match.lugar || '',
+        nivel: match.nivel || match.nivel_semestre || match.niv || 1,
+        niv: fetchedNiv,
+        isExternal: isExternal
+      };
+
+      setCurrentStudent(studentData);
+      setUserRole('student');
+
+      // Fetch student registrations using identity reference
+      const { data: regs } = await supabase
+        .from('inscripciones')
+        .select('visita_id, estado')
+        .eq('estudiante_registro', studentData.registro);
+      if (regs) {
+        setMyRegistrations(regs.filter((r: any) => r.estado !== 'ANULADO').map((r: any) => r.visita_id));
+        setCanceledRegistrations(regs.filter((r: any) => r.estado === 'ANULADO').map((r: any) => r.visita_id));
+      }
+
     } catch (err) {
+      console.error(err);
       setLoginError('Error de conexión.');
     } finally {
       setIsLoggingIn(false);
@@ -348,6 +408,57 @@ export default function App() {
       setRegError(err.message || 'Error desconocido al registrar asistencia.');
     } finally {
       setIsBooking(null);
+    }
+  };
+
+  const submitCancellation = async () => {
+    if (!currentStudent || !showCancelModal) return;
+    if (!cancelReason.trim()) {
+      setRegError('El motivo de anulación es obligatorio.');
+      return;
+    }
+
+    setIsCanceling(true);
+    setRegError('');
+
+    try {
+      const visitId = showCancelModal;
+      const registroId = currentStudent.registro;
+
+      // Update enrollment status to 'ANULADO' and store the reason in a text column
+      const { error } = await supabase
+        .from('inscripciones')
+        .update({
+          estado: 'ANULADO',
+          motivo_anulacion: cancelReason.trim(),
+          problema_salud: `ANULADO. Motivo: ${cancelReason.trim()}`
+        })
+        .eq('estudiante_registro', registroId)
+        .eq('visita_id', visitId);
+
+      if (error) {
+        throw error;
+      }
+
+      // Update state immediately
+      setMyRegistrations(prev => prev.filter(id => id !== visitId));
+      setCanceledRegistrations(prev => [...prev, visitId]);
+      
+      // Update counts globally by fetching all registrations
+      try {
+        await fetchAllRegistrations();
+      } catch (e) {
+        console.error("Non-critical error updating all registrations:", e);
+      }
+
+      setShowCancelModal(null);
+      setCancelReason('');
+      alert('¡Inscripción anulada con éxito!');
+    } catch (err: any) {
+      console.error(err);
+      setRegError(err.message || 'Error al anular la inscripción.');
+    } finally {
+      setIsCanceling(false);
     }
   };
 
@@ -487,15 +598,17 @@ export default function App() {
     doc.setFont("helvetica", "normal");
     doc.text(`CUPOS INSCRITOS:`, margin + 10, detailsY + 34);
     doc.setFont("helvetica", "bold");
-    doc.text(`${enrolledStudents.length} / ${selectedVisitForStatus.cupos_max}`, margin + 50, detailsY + 34);
+    doc.text(`${enrolledStudents.filter((r: any) => r.estado !== 'ANULADO').length} / ${selectedVisitForStatus.cupos_max}`, margin + 50, detailsY + 34);
 
     // 4. Students Table
-    const tableData = enrolledStudents.map(reg => [
-      reg.student?.nombre || reg.nombre_estudiante || '---',
-      reg.estudiante_registro,
-      reg.student?.carrera || '---',
-      reg.student?.celular || reg.student?.telefono || '---'
-    ]);
+    const tableData = enrolledStudents
+      .filter((reg: any) => reg.estado !== 'ANULADO')
+      .map(reg => [
+        reg.student?.nombre || reg.nombre_estudiante || '---',
+        reg.estudiante_registro,
+        reg.student?.carrera || '---',
+        reg.student?.celular || reg.student?.telefono || '---'
+      ]);
 
     autoTable(doc, {
       startY: detailsY + 45,
@@ -763,55 +876,74 @@ export default function App() {
 
               <form onSubmit={handleLogin} className="space-y-6">
                 {loginMode === 'admin' && (
-                  <div>
-                    <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest pl-2 mb-2 block">Usuario Administrador</label>
-                    <div className="relative">
-                      <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
-                      <input 
-                        type="text" 
-                        value={adminUser}
-                        onChange={(e) => setAdminUser(e.target.value)}
-                        placeholder="Ej: admin"
-                        className="w-full h-14 bg-slate-50 border-2 border-slate-100 focus:border-[#001f3f] focus:ring-4 focus:ring-indigo-100 rounded-2xl pl-12 outline-none transition-all placeholder:text-slate-300 font-bold"
-                        required
-                      />
+                  <>
+                    <div>
+                      <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest pl-2 mb-2 block">Usuario Administrador</label>
+                      <div className="relative">
+                        <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+                        <input 
+                          type="text" 
+                          value={adminUser}
+                          onChange={(e) => setAdminUser(e.target.value)}
+                          placeholder="Ej: admin"
+                          className="w-full h-14 bg-slate-50 border-2 border-slate-100 focus:border-[#001f3f] focus:ring-4 focus:ring-indigo-100 rounded-2xl pl-12 outline-none transition-all placeholder:text-slate-300 font-bold"
+                          required
+                        />
+                      </div>
                     </div>
-                  </div>
+
+                    <div>
+                      <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest pl-2 mb-2 block">
+                        Contraseña
+                      </label>
+                      <div className="relative">
+                        <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+                        <input 
+                          type="password" 
+                          value={loginPass}
+                          onChange={(e) => setLoginPass(e.target.value)}
+                          placeholder="Contraseña de acceso"
+                          className="w-full h-14 bg-slate-50 border-2 border-slate-100 focus:border-[#001f3f] focus:ring-4 focus:ring-indigo-100 rounded-2xl pl-12 outline-none transition-all placeholder:text-slate-300 font-bold"
+                          required
+                        />
+                      </div>
+                    </div>
+                  </>
                 )}
                 
                 {loginMode === 'student' && (
-                  <div>
-                    <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest pl-2 mb-2 block">Número de Registro</label>
-                    <div className="relative">
-                      <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
-                      <input 
-                        type="text" 
-                        value={loginId}
-                        onChange={(e) => setLoginId(e.target.value)}
-                        placeholder="Ingrese su registro"
-                        className="w-full h-14 bg-slate-50 border-2 border-slate-100 focus:border-[#001f3f] focus:ring-4 focus:ring-indigo-100 rounded-2xl pl-12 outline-none transition-all placeholder:text-slate-300 font-bold"
-                        required
-                      />
+                  <>
+                    <div>
+                      <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest pl-2 mb-2 block">Usuario (Registro o Ticket)</label>
+                      <div className="relative">
+                        <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+                        <input 
+                          type="text" 
+                          value={loginId}
+                          onChange={(e) => setLoginId(e.target.value)}
+                          placeholder="Ingrese su Registro o Número de Ticket"
+                          className="w-full h-14 bg-slate-50 border-2 border-slate-100 focus:border-[#001f3f] focus:ring-4 focus:ring-indigo-100 rounded-2xl pl-12 outline-none transition-all placeholder:text-slate-300 font-bold"
+                          required
+                        />
+                      </div>
                     </div>
-                  </div>
-                )}
 
-                <div>
-                  <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest pl-2 mb-2 block">
-                    {loginMode === 'student' ? 'Cédula de Identidad (CI)' : 'Contraseña'}
-                  </label>
-                  <div className="relative">
-                    <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
-                    <input 
-                      type="password" 
-                      value={loginPass}
-                      onChange={(e) => setLoginPass(e.target.value)}
-                      placeholder={loginMode === 'student' ? "Ingrese su CI" : "Contraseña de acceso"}
-                      className="w-full h-14 bg-slate-50 border-2 border-slate-100 focus:border-[#001f3f] focus:ring-4 focus:ring-indigo-100 rounded-2xl pl-12 outline-none transition-all placeholder:text-slate-300 font-bold"
-                      required
-                    />
-                  </div>
-                </div>
+                    <div>
+                      <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest pl-2 mb-2 block">Contraseña (Cédula de Identidad)</label>
+                      <div className="relative">
+                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+                        <input 
+                          type="password" 
+                          value={loginPass}
+                          onChange={(e) => setLoginPass(e.target.value)}
+                          placeholder="Ingrese su Cédula de Identidad"
+                          className="w-full h-14 bg-slate-50 border-2 border-slate-100 focus:border-[#001f3f] focus:ring-4 focus:ring-indigo-100 rounded-2xl pl-12 outline-none transition-all placeholder:text-slate-300 font-bold"
+                          required
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
 
                 {loginError && <p className="text-rose-500 text-xs font-black text-center bg-rose-50 p-3 rounded-xl border border-rose-100">{loginError}</p>}
 
@@ -850,7 +982,11 @@ export default function App() {
                 <h2 className="text-3xl font-black text-slate-800 capitalize leading-tight mb-2">{currentStudent?.nombre.toLowerCase()}</h2>
                 <div className="flex flex-wrap justify-center md:justify-start gap-4">
                   <span className="px-4 py-1.5 bg-indigo-50 text-indigo-600 rounded-xl font-black text-xs uppercase tracking-widest">REG: {currentStudent?.registro}</span>
-                  <span className="px-4 py-1.5 bg-emerald-50 text-emerald-600 rounded-xl font-black text-xs uppercase tracking-widest">Semestre: {studentLvl}</span>
+                  {currentStudent?.isExternal ? (
+                    <span className="px-4 py-1.5 bg-amber-50 text-amber-600 rounded-xl font-black text-xs uppercase tracking-widest">Estudiante Externo</span>
+                  ) : (
+                    <span className="px-4 py-1.5 bg-emerald-50 text-emerald-600 rounded-xl font-black text-xs uppercase tracking-widest">SEMESTRE: {currentStudent?.niv !== undefined ? currentStudent.niv : studentLvl}</span>
+                  )}
                 </div>
               </div>
             </div>
@@ -861,7 +997,7 @@ export default function App() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {availableVisits.map(visit => {
-                const isEligible = studentLvl >= visit.min_nivel;
+                const isEligible = currentStudent?.isExternal ? true : (studentLvl >= visit.min_nivel);
                 const isRegistered = myRegistrations.includes(visit.id);
                 
                 return (
@@ -895,8 +1031,24 @@ export default function App() {
                         {visit.horario && <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-tighter">{visit.horario}</span>}
                       </div>
                       {isRegistered ? (
-                        <div className="flex items-center gap-1 text-emerald-600 font-black text-xs">
-                          <Check size={14}/> INSCRITO
+                        <div className="flex flex-col items-end gap-1.5">
+                          <div className="flex items-center gap-1 text-emerald-600 font-black text-xs">
+                            <Check size={14}/> INSCRITO
+                          </div>
+                          <button
+                            onClick={() => {
+                              setShowCancelModal(visit.id);
+                              setCancelReason('');
+                              setRegError('');
+                            }}
+                            className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-100 font-extrabold rounded-xl text-[10px] uppercase tracking-wider transition-colors shadow-sm"
+                          >
+                            Anular Inscripción
+                          </button>
+                        </div>
+                      ) : canceledRegistrations.includes(visit.id) ? (
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 text-rose-600 border border-rose-100 rounded-xl font-black text-[10px] uppercase tracking-wider">
+                          <XCircle size={12}/> Inscripción Anulada
                         </div>
                       ) : (
                         <button 
@@ -1125,6 +1277,77 @@ export default function App() {
                 </motion.div>
               </motion.div>
             )}
+
+            {showCancelModal && (
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-[#001f3f]/80 backdrop-blur-xl z-[100] flex items-center justify-center p-4 overflow-y-auto"
+              >
+                <motion.div 
+                  initial={{ scale: 0.95, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.95, opacity: 0 }}
+                  className="bg-white rounded-[2.5rem] w-full max-w-lg p-8 md:p-10 shadow-2xl relative animate-in zoom-in-95 duration-150"
+                >
+                  <button 
+                    onClick={() => setShowCancelModal(null)}
+                    className="absolute top-6 right-6 p-2 bg-slate-50 text-slate-400 hover:text-rose-500 rounded-full transition-all"
+                  >
+                    <XCircle size={24} />
+                  </button>
+
+                  <div className="mb-6 mt-2">
+                    <div className="p-4 bg-rose-50 text-rose-600 w-fit rounded-2xl shadow-sm mb-4">
+                      <AlertTriangle size={32} />
+                    </div>
+                    <h2 className="text-2xl font-black text-slate-800 leading-tight">Anular Inscripción</h2>
+                    <p className="text-slate-500 text-xs font-semibold mt-1">
+                      ¿Está seguro que desea anular su inscripción para <strong>{availableVisits.find(v => v.id === showCancelModal)?.nombre}</strong>?
+                    </p>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-[10px] font-black uppercase text-rose-500 tracking-widest pl-2 mb-2 block">
+                        Motivo de la Anulación (Obligatorio)
+                      </label>
+                      <textarea
+                        value={cancelReason}
+                        onChange={(e) => setCancelReason(e.target.value)}
+                        placeholder="Ej. Cruce de materias, enfermedad, etc."
+                        className="w-full h-32 p-4 bg-slate-50 border-2 border-slate-100 focus:border-rose-500 focus:ring-4 focus:ring-rose-50 rounded-2xl outline-none transition-all placeholder:text-slate-300 font-bold text-sm resize-none"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  {regError && (
+                    <p className="mt-4 text-[10px] font-black text-rose-500 uppercase tracking-widest text-center animate-pulse">
+                      {regError}
+                    </p>
+                  )}
+
+                  <div className="mt-8 flex gap-4 justify-end">
+                    <button
+                      onClick={() => setShowCancelModal(null)}
+                      className="px-6 h-12 rounded-xl text-xs font-black uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-colors"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={submitCancellation}
+                      disabled={isCanceling || !cancelReason.trim()}
+                      className="px-8 h-12 bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-xl shadow-rose-100 flex items-center gap-2 transition-all hover:scale-105"
+                    >
+                      {isCanceling ? <Loader2 className="animate-spin w-4 h-4" /> : <Trash2 size={16}/>}
+                      Confirmar Anulación
+                    </button>
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
           </AnimatePresence>
         </div>
       </div>
@@ -1236,7 +1459,7 @@ export default function App() {
                               <div className="flex flex-col items-center">
                                 <div className="flex items-center gap-1.5 text-sm font-bold text-slate-800">
                                   <Users size={14} className="text-slate-300"/>
-                                  {allRegistrations.filter(r => r.visita_id === v.id).length} / {v.cupos_max}
+                                  {allRegistrations.filter(r => r.visita_id === v.id && r.estado !== 'ANULADO').length} / {v.cupos_max}
                                 </div>
                                   <div className="w-16 h-1 bg-slate-100 rounded-full mt-1.5 overflow-hidden">
                                     <div 
@@ -1244,7 +1467,7 @@ export default function App() {
                                       style={{
                                         width: `${Math.min(100, 
                                           (v.cupos_max > 0) 
-                                            ? (allRegistrations.filter(r => r.visita_id === v.id).length / v.cupos_max) * 100 
+                                            ? (allRegistrations.filter(r => r.visita_id === v.id && r.estado !== 'ANULADO').length / v.cupos_max) * 100 
                                             : 0
                                         )}%`
                                       }}
@@ -1442,8 +1665,8 @@ export default function App() {
                             <h2 className="text-2xl font-black text-slate-800">Estado: {selectedVisitForStatus.nombre}</h2>
                             <div className="flex items-center gap-3">
                               <p className="text-sm text-slate-400 font-bold uppercase tracking-widest">{selectedVisitForStatus.fecha} | {selectedVisitForStatus.horario}</p>
-                              <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${enrolledStudents.length >= selectedVisitForStatus.cupos_max ? 'bg-rose-100 text-rose-600' : 'bg-emerald-100 text-emerald-600'}`}>
-                                {enrolledStudents.length} / {selectedVisitForStatus.cupos_max} Inscritos
+                              <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${enrolledStudents.filter((r: any) => r.estado !== 'ANULADO').length >= selectedVisitForStatus.cupos_max ? 'bg-rose-100 text-rose-600' : 'bg-emerald-100 text-emerald-600'}`}>
+                                {enrolledStudents.filter((r: any) => r.estado !== 'ANULADO').length} / {selectedVisitForStatus.cupos_max} Inscritos
                               </span>
                             </div>
                           </div>
@@ -1467,8 +1690,15 @@ export default function App() {
                               </thead>
                               <tbody>
                                 {enrolledStudents.map((reg: any) => (
-                                  <tr key={reg.id} className="border-b border-slate-50 last:border-0 hover:bg-white transition-colors">
-                                    <td className="p-4 font-bold text-slate-800">{reg.student?.nombre || reg.nombre_estudiante || '---'}</td>
+                                  <tr key={reg.id} className={`border-b border-slate-50 last:border-0 hover:bg-white transition-colors ${reg.estado === 'ANULADO' ? 'bg-rose-50/20 text-slate-400 opacity-60' : ''}`}>
+                                    <td className="p-4 font-bold text-slate-800">
+                                      <span className={reg.estado === 'ANULADO' ? 'line-through text-slate-400 font-normal' : ''}>
+                                        {reg.student?.nombre || reg.nombre_estudiante || '---'}
+                                      </span>
+                                      {reg.estado === 'ANULADO' && (
+                                        <span className="ml-2 px-1.5 py-0.5 bg-rose-100 text-rose-700 rounded text-[9px] font-black uppercase tracking-wider">ANULADO</span>
+                                      )}
+                                    </td>
                                     <td className="p-4 font-mono text-indigo-600">{reg.estudiante_registro}</td>
                                     <td className="p-4 text-slate-500">{reg.student?.carrera || '---'}</td>
                                     <td className="p-4 text-slate-500 font-mono text-[10px]">{reg.student?.celular || reg.student?.telefono || '---'}</td>
@@ -1656,15 +1886,20 @@ export default function App() {
                        </thead>
                        <tbody className="divide-y divide-slate-50">
                           {filteredRegistrations.map(r => (
-                             <tr key={r.id} className="hover:bg-slate-50/50 transition-colors">
+                             <tr key={r.id} className={`hover:bg-slate-50/50 transition-colors ${r.estado === 'ANULADO' ? 'bg-rose-50/30 text-slate-400 opacity-75' : ''}`}>
                                 <td className="p-4">
-                                   <div className="font-bold text-slate-800">{r.nombre_estudiante}</div>
+                                   <div className={`font-bold ${r.estado === 'ANULADO' ? 'line-through text-slate-400' : 'text-slate-800'}`}>{r.nombre_estudiante}</div>
                                    <div className="text-[10px] text-slate-400 font-black uppercase">{r.estudiantes?.carrera || 'Carrera N/D'}</div>
                                 </td>
                                 <td className="p-4 font-mono text-slate-500">{r.estudiante_registro}</td>
                                 <td className="p-4">
-                                   <div className="font-bold text-indigo-600">{r.nombre_visita}</div>
-                                   <div className="text-[10px] text-slate-400">{new Date(r.fecha_inscripcion!).toLocaleDateString()}</div>
+                                   <div className={`font-bold ${r.estado === 'ANULADO' ? 'line-through text-slate-400' : 'text-indigo-600'}`}>{r.nombre_visita}</div>
+                                   <div className="text-[10px] text-slate-400">
+                                      {new Date(r.fecha_inscripcion!).toLocaleDateString()}
+                                      {r.estado === 'ANULADO' && (
+                                         <span className="ml-2 px-1.5 py-0.5 bg-rose-100 text-rose-700 rounded text-[9px] font-black uppercase tracking-wider">ANULADO</span>
+                                      )}
+                                   </div>
                                 </td>
                                 <td className="p-4">
                                    <div className="flex justify-center gap-2">
@@ -1889,7 +2124,12 @@ export default function App() {
                 <div className="flex items-center gap-5 mb-8">
                   <div className="p-4 bg-indigo-50 text-indigo-600 rounded-3xl"><FileText size={40}/></div>
                   <div>
-                    <h2 className="text-2xl font-black text-slate-800">{viewRegDetails.nombre_estudiante}</h2>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h2 className="text-2xl font-black text-slate-800">{viewRegDetails.nombre_estudiante}</h2>
+                      {viewRegDetails.estado === 'ANULADO' && (
+                        <span className="px-2.5 py-1 bg-rose-100 text-rose-700 rounded-lg text-xs font-black uppercase tracking-wider">ANULADO</span>
+                      )}
+                    </div>
                     <p className="text-sm text-slate-400 font-bold uppercase tracking-widest">{viewRegDetails.nombre_visita}</p>
                   </div>
                 </div>
@@ -1947,6 +2187,15 @@ export default function App() {
                         {viewRegDetails.problema_salud || 'Sin observaciones reportadas.'}
                       </div>
                     </div>
+
+                    {viewRegDetails.estado === 'ANULADO' && (
+                      <div className="animate-in fade-in duration-200">
+                        <span className="text-[10px] font-black uppercase text-rose-500 tracking-widest block mb-2 font-black">Motivo de Anulación</span>
+                        <div className="p-4 bg-rose-50 border border-rose-100 text-rose-800 rounded-2xl text-sm font-extrabold shadow-sm">
+                          {viewRegDetails.motivo_anulacion || 'No especificado (Anulado por estudiante)'}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
