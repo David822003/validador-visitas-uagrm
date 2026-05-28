@@ -113,6 +113,14 @@ function StudentTable({ data, sticky = false }: { data: DatabaseStudent[], stick
 // --- Main App ---
 
 export default function App() {
+  const isMounted = useRef(true);
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+
   const [userRole, setUserRole] = useState<'guest' | 'student' | 'admin'>('guest');
   const [loginMode, setLoginMode] = useState<'select' | 'student' | 'admin'>('select');
   const [currentStudent, setCurrentStudent] = useState<DatabaseStudent | null>(null);
@@ -478,6 +486,16 @@ export default function App() {
     }
   };
 
+  const handleCloseCancelModal = () => {
+    setShowCancelModal(null);
+    setTimeout(() => {
+      if (isMounted.current) {
+        setCancelReason('');
+        setRegError('');
+      }
+    }, 400);
+  };
+
   const submitCancellation = async () => {
     if (!currentStudent || !showCancelModal) return;
     if (!cancelReason.trim()) {
@@ -507,6 +525,8 @@ export default function App() {
         throw error;
       }
 
+      if (!isMounted.current) return;
+
       // Update state immediately
       setMyRegistrations(prev => prev.filter(id => id !== visitId));
       setCanceledRegistrations(prev => [...prev, visitId]);
@@ -534,14 +554,18 @@ export default function App() {
         console.error("Non-critical error updating all registrations:", e);
       }
 
-      setShowCancelModal(null);
-      setCancelReason('');
+      if (!isMounted.current) return;
+
+      handleCloseCancelModal();
       alert('¡Inscripción anulada con éxito!');
     } catch (err: any) {
+      if (!isMounted.current) return;
       console.error(err);
       setRegError(err.message || 'Error al anular la inscripción.');
     } finally {
-      setIsCanceling(false);
+      if (isMounted.current) {
+        setIsCanceling(false);
+      }
     }
   };
 
@@ -558,6 +582,26 @@ export default function App() {
     });
     setEditingVisit(null);
     setShowVisitModal(false);
+  };
+
+  const handleCloseVisitModal = () => {
+    setShowVisitModal(false);
+    // Keep form data and editingVisit intact during the 400ms exit transition
+    setTimeout(() => {
+      if (isMounted.current) {
+        setVisitForm({
+          nombre: '',
+          descripcion: '',
+          fecha: '',
+          horario: '',
+          horario_inicio: '',
+          horario_fin: '',
+          cupos_max: 30,
+          min_nivel: 1
+        });
+        setEditingVisit(null);
+      }
+    }, 400);
   };
 
   const handleSaveVisit = async (e: React.FormEvent) => {
@@ -584,6 +628,8 @@ export default function App() {
         
         if (error) throw error;
 
+        if (!isMounted.current) return;
+
         // Update local state immediately for instant UI response
         if (data && data.length > 0) {
           setAvailableVisits(prev => prev.map(v => v.id === editingVisit.id ? data[0] : v));
@@ -598,6 +644,8 @@ export default function App() {
         
         if (error) throw error;
 
+        if (!isMounted.current) return;
+
         // Insert in local state immediately
         if (data && data.length > 0) {
           setAvailableVisits(prev => [...prev, data[0]]);
@@ -610,13 +658,18 @@ export default function App() {
         await fetchAllRegistrations();
       }
 
-      handleResetVisitForm();
+      if (!isMounted.current) return;
+
+      handleCloseVisitModal();
       alert('Visita guardada correctamente');
     } catch (err: any) {
+      if (!isMounted.current) return;
       console.error(err);
       alert('Error al guardar visita: ' + err.message);
     } finally {
-      setIsSavingVisit(false);
+      if (isMounted.current) {
+        setIsSavingVisit(false);
+      }
     }
   };
 
@@ -1361,12 +1414,12 @@ export default function App() {
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {availableVisits.map(visit => {
+              {availableVisits.map((visit, index) => {
                 const isEligible = currentStudent?.isExternal ? true : (studentLvl >= visit.min_nivel);
                 const isRegistered = myRegistrations.includes(visit.id);
                 
                 return (
-                  <div key={visit.id} className={`group p-6 rounded-[2rem] border-2 transition-all relative overflow-hidden flex flex-col justify-between ${isRegistered ? 'bg-emerald-950/40 border-emerald-400/50 shadow-lg shadow-emerald-950/30' : isEligible ? 'bg-slate-950/40 hover:bg-slate-950/50 backdrop-blur-md border-emerald-500/15 hover:border-amber-500/30' : 'bg-slate-950/20 border-emerald-900/10 opacity-70'}`}>
+                  <div key={visit.id || `visit-card-${index}`} className={`group p-6 rounded-[2rem] border-2 transition-all relative overflow-hidden flex flex-col justify-between ${isRegistered ? 'bg-emerald-950/40 border-emerald-400/50 shadow-lg shadow-emerald-950/30' : isEligible ? 'bg-slate-950/40 hover:bg-slate-950/50 backdrop-blur-md border-emerald-500/15 hover:border-amber-500/30' : 'bg-slate-950/20 border-emerald-900/10 opacity-70'}`}>
                     {!isEligible && !isRegistered && (
                       <div className="absolute inset-0 bg-slate-950/45 backdrop-blur-[1.5px] flex items-center justify-center z-25">
                         <div className="bg-[#011a16]/95 p-4 rounded-3xl shadow-2xl border border-rose-500/25 flex flex-col items-center gap-2 scale-90 md:scale-100">
@@ -1804,8 +1857,8 @@ export default function App() {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100 bg-white text-slate-700">
-                        {availableVisits.map(v => (
-                          <tr key={v.id} className="hover:bg-slate-50/70 transition-colors group">
+                        {availableVisits.map((v, idx) => (
+                          <tr key={v.id || `visit-row-${idx}`} className="hover:bg-slate-50/70 transition-colors group">
                             <td className="p-5 pl-8">
                               <div className="flex items-center gap-4">
                                 <div className="p-2.5 bg-slate-100 text-slate-700 border border-slate-200 rounded-xl">
@@ -1916,7 +1969,7 @@ export default function App() {
                         initial={{scale:0.9, y:20}} animate={{scale:1, y:0}} exit={{scale:0.9, y:20}}
                         className="bg-[#021c17] text-white rounded-[2.5rem] p-10 max-w-2xl w-full border border-emerald-500/15 shadow-2xl relative"
                       >
-                        <button onClick={handleResetVisitForm} className="absolute top-8 right-8 text-emerald-400 bg-[#022a22] p-1.5 border border-emerald-500/20 rounded-full hover:text-rose-400 transition-colors"><XCircle size={24}/></button>
+                        <button onClick={handleCloseVisitModal} className="absolute top-8 right-8 text-emerald-400 bg-[#022a22] p-1.5 border border-emerald-500/20 rounded-full hover:text-rose-400 transition-colors"><XCircle size={24}/></button>
                         
                         <div className="flex items-center gap-4 mb-8">
                           <div className="p-4 bg-gradient-to-br from-emerald-500 to-teal-850 border border-emerald-400/20 text-white rounded-3xl shadow-lg"><Calendar size={32}/></div>
@@ -2006,7 +2059,7 @@ export default function App() {
                             </div>
                           </div>
                           <div className="flex justify-end gap-3 pt-4">
-                            <button type="button" onClick={handleResetVisitForm} className="h-14 px-6 font-black text-emerald-400 text-xs uppercase tracking-widest hover:text-emerald-200 transition-colors">Cancelar</button>
+                            <button type="button" onClick={handleCloseVisitModal} className="h-14 px-6 font-black text-emerald-400 text-xs uppercase tracking-widest hover:text-emerald-200 transition-colors">Cancelar</button>
                             <button 
                               type="submit" 
                               disabled={isSavingVisit}
