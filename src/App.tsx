@@ -1585,7 +1585,7 @@ export default function App() {
                           onClick={() => handleRegisterForVisit(visit.id)}
                           className={`px-4 py-2 rounded-xl text-xs font-black transition-all ${isEligible ? 'bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white shadow-lg shadow-emerald-950/50' : 'bg-slate-800 text-slate-500 cursor-not-allowed'}`}
                         >
-                          {isBooking === visit.id ? <Loader2 className="animate-spin w-4 h-4" /> : "Iniciar Inscripción"}
+                          "Iniciar Inscripción"
                         </button>
                       )}
                     </div>
@@ -1796,9 +1796,8 @@ export default function App() {
                             <button 
                               onClick={submitRegistration}
                               disabled={isBooking !== null || !regForm.contacto_referencia.trim()}
-                              className="h-16 px-12 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-2xl font-black text-lg hover:scale-105 transition-all shadow-xl flex items-center gap-3 disabled:opacity-40"
+                              className="h-16 px-12 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-2xl font-black text-lg hover:scale-105 transition-all shadow-xl flex items-center justify-center disabled:opacity-40"
                             >
-                              {isBooking ? <Loader2 className="animate-spin" /> : <CheckCircle2 size={24}/>}
                               CONFIRMAR ASISTENCIA
                             </button>
                           </div>
@@ -1872,9 +1871,8 @@ export default function App() {
                     <button
                       onClick={submitCancellation}
                       disabled={isCanceling || !cancelReason.trim()}
-                      className="px-8 h-12 bg-rose-950 text-rose-300 border border-rose-500/20 hover:bg-rose-900 disabled:opacity-30 rounded-xl font-black text-xs uppercase tracking-widest shadow-xl flex items-center gap-2 transition-all hover:scale-105"
+                      className="px-8 h-12 bg-rose-950 text-rose-300 border border-rose-500/20 hover:bg-rose-900 disabled:opacity-30 rounded-xl font-black text-xs uppercase tracking-widest shadow-xl flex items-center justify-center transition-all hover:scale-105"
                     >
-                      {isCanceling ? <Loader2 className="animate-spin w-4 h-4" /> : <Trash2 size={16}/>}
                       Confirmar Anulación
                     </button>
                   </div>
@@ -2067,16 +2065,13 @@ export default function App() {
                   )}
                 </div>
 
-                <AnimatePresence>
-                  {showVisitModal && (
-                    <motion.div 
-                      initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
-                      className="fixed inset-0 bg-slate-950/85 backdrop-blur-xl z-[200] flex items-center justify-center p-4"
+                {showVisitModal && (
+                  <div 
+                    className="fixed inset-0 bg-slate-950/85 backdrop-blur-xl z-[200] flex items-center justify-center p-4"
+                  >
+                    <div 
+                      className="bg-[#021c17] text-white rounded-[2.5rem] p-10 max-w-2xl w-full border border-emerald-500/15 shadow-2xl relative"
                     >
-                      <motion.div 
-                        initial={{scale:0.9, y:20}} animate={{scale:1, y:0}} exit={{scale:0.9, y:20}}
-                        className="bg-[#021c17] text-white rounded-[2.5rem] p-10 max-w-2xl w-full border border-emerald-500/15 shadow-2xl relative"
-                      >
                         <button onClick={handleCloseVisitModal} className="absolute top-8 right-8 text-emerald-400 bg-[#022a22] p-1.5 border border-emerald-500/20 rounded-full hover:text-rose-400 transition-colors"><XCircle size={24}/></button>
                         
                         <div className="flex items-center gap-4 mb-8">
@@ -2171,25 +2166,21 @@ export default function App() {
                             <button 
                               type="submit" 
                               disabled={isSavingVisit}
-                              className="h-14 px-10 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-2xl font-black text-sm hover:scale-[1.02] active:scale-95 transition-all shadow-xl flex items-center gap-3 disabled:opacity-40"
+                              className="h-14 px-10 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-2xl font-black text-sm hover:scale-[1.02] active:scale-95 transition-all shadow-xl flex items-center justify-center disabled:opacity-40"
                             >
-                              {isSavingVisit ? <Loader2 className="animate-spin" size={18}/> : <Database size={18}/>}
-                              {editingVisit ? 'ACTUALIZAR VISITA' : 'CREAR VISITA'}
+                              GUARDAR VISITA
                             </button>
                           </div>
                         </form>
-                      </motion.div>
-                    </motion.div>
+                      </div>
+                    </div>
                   )}
 
                   {selectedVisitForStatus && (
-                    <motion.div 
-                      key="visit-status"
-                      initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
+                    <div 
                       className="fixed inset-0 bg-slate-950/85 backdrop-blur-xl z-[200] flex items-center justify-center p-4"
                     >
-                      <motion.div 
-                        initial={{scale:0.9, y:20}} animate={{scale:1, y:0}} exit={{scale:0.9, y:20}}
+                      <div 
                         className="bg-[#021c17] text-white rounded-[2.5rem] p-10 max-w-4xl w-full border border-emerald-500/15 shadow-2xl relative max-h-[90vh] overflow-hidden flex flex-col"
                       >
                         <button onClick={() => setSelectedVisitForStatus(null)} className="absolute top-8 right-8 text-emerald-400 bg-[#022a22] p-1.5 border border-emerald-500/20 rounded-full hover:text-rose-400 transition-colors"><XCircle size={24}/></button>
@@ -2290,10 +2281,9 @@ export default function App() {
                             </AnimatePresence>
                           </div>
                         </div>
-                      </motion.div>
-                    </motion.div>
+                      </div>
+                    </div>
                   )}
-                </AnimatePresence>
               </motion.div>
             )}
 
