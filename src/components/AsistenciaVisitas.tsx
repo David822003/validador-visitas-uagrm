@@ -13,7 +13,8 @@ interface AsistenciaRegistro {
   visita_id: string;
   ticket_id: string;
   nombre_estudiante: string;
-  fecha_ingreso: string;
+  fecha_hora?: string;
+  fecha_ingreso?: string;
   is_eligible_pre?: boolean; // locally resolved or database field
 }
 
@@ -170,8 +171,8 @@ export default function AsistenciaVisitas({ visits: propVisits, onSupabaseError 
       } else if (data) {
         // Sort most recent first
         const sorted = [...data].sort((a, b) => {
-          const dateA = new Date(a.fecha_ingreso || a.created_at || 0).getTime();
-          const dateB = new Date(b.fecha_ingreso || b.created_at || 0).getTime();
+          const dateA = new Date(a.fecha_hora || a.fecha_ingreso || a.created_at || 0).getTime();
+          const dateB = new Date(b.fecha_hora || b.fecha_ingreso || b.created_at || b.created_at || 0).getTime();
           return dateB - dateA;
         });
         setRegistros(sorted);
@@ -290,7 +291,7 @@ export default function AsistenciaVisitas({ visits: propVisits, onSupabaseError 
       }
 
       const studentRegistro = finalCongData.registro_universitario;
-      const studentNombre = finalCongData.nombre || finalCongData.nombre_completo || 'Estudiante';
+      const studentNombre = finalCongData.nombre_completo || finalCongData.nombre || 'Estudiante';
 
       if (!studentRegistro) {
         playBeep('error');
@@ -456,7 +457,7 @@ export default function AsistenciaVisitas({ visits: propVisits, onSupabaseError 
 
       if (match) {
         studentRegistro = match.registro_universitario || '';
-        studentNombre = match.nombre || match.nombre_completo || 'Estudiante';
+        studentNombre = match.nombre_completo || match.nombre || 'Estudiante';
         ticketIdUsed = String(match.id);
       } else {
         // Try fallback to students table
