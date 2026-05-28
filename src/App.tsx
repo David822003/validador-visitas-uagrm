@@ -3,7 +3,7 @@ import {
   Search, MapPin, Building2, CheckCircle2, XCircle, 
   GraduationCap, User, Upload, Database, Loader2, 
   Check, AlertCircle, RefreshCw, FileText, Layers,
-  LayoutGrid, LogOut, ClipboardList, ShieldCheck, Mail, Calendar, Users, Filter, Download, Trash2, Lock, ArrowLeft, Plus, IdCard, Phone, Eye, AlertTriangle
+  LayoutGrid, LogOut, ClipboardList, ShieldCheck, Mail, Calendar, Users, Filter, Download, Trash2, Lock, ArrowLeft, Plus, IdCard, Phone, Eye, AlertTriangle, QrCode
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { DatabaseStudent, VISITS_REQUIREMENTS, TechnicalVisit, Registration } from './types';
@@ -12,6 +12,7 @@ import { supabase } from './lib/supabase';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
+import AsistenciaVisitas from './components/AsistenciaVisitas';
 
 // --- Components ---
 
@@ -144,7 +145,7 @@ export default function App() {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   // Admin View State
-  const [adminTab, setAdminTab] = useState<'stats' | 'sync' | 'registrations' | 'validator' | 'visitas'>(() => {
+  const [adminTab, setAdminTab] = useState<'stats' | 'sync' | 'registrations' | 'validator' | 'visitas' | 'qr_asistencia'>(() => {
     return (localStorage.getItem('ceic_adminTab') as any) || 'registrations';
   });
 
@@ -1907,6 +1908,7 @@ export default function App() {
               {[
                 { id: 'registrations', label: 'Inscritos', icon: ClipboardList },
                 { id: 'visitas', label: 'Gestión de Visitas', icon: Calendar },
+                { id: 'qr_asistencia', label: 'Asistencia QR', icon: QrCode },
                 { id: 'validator', label: 'Validador Estudiantil', icon: Search },
                 { id: 'stats', label: 'Resumen', icon: Filter },
                 { id: 'sync', label: 'Sync & Import', icon: RefreshCw },
@@ -1934,6 +1936,12 @@ export default function App() {
         {/* Main Content */}
         <main className="flex-1 p-6 md:p-12 overflow-y-auto">
           <AnimatePresence mode="wait">
+            {adminTab === 'qr_asistencia' && (
+              <motion.div key="qr" initial={{opacity:0, y:20}} animate={{opacity:1, y:0}} className="space-y-6">
+                <AsistenciaVisitas visits={availableVisits} onSupabaseError={handleSupabaseError} />
+              </motion.div>
+            )}
+
             {adminTab === 'visitas' && (
               <motion.div key="vis" initial={{opacity:0, y:20}} animate={{opacity:1, y:0}} className="space-y-6">
                 <div className="flex items-center justify-between mb-4">
