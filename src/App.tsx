@@ -121,9 +121,20 @@ export default function App() {
     };
   }, []);
 
-  const [userRole, setUserRole] = useState<'guest' | 'student' | 'admin'>('guest');
-  const [loginMode, setLoginMode] = useState<'select' | 'student' | 'admin'>('select');
-  const [currentStudent, setCurrentStudent] = useState<DatabaseStudent | null>(null);
+  const [userRole, setUserRole] = useState<'guest' | 'student' | 'admin'>(() => {
+    return (localStorage.getItem('ceic_userRole') as any) || 'guest';
+  });
+  const [loginMode, setLoginMode] = useState<'select' | 'student' | 'admin'>(() => {
+    return (localStorage.getItem('ceic_loginMode') as any) || 'select';
+  });
+  const [currentStudent, setCurrentStudent] = useState<DatabaseStudent | null>(() => {
+    try {
+      const stored = localStorage.getItem('ceic_currentStudent');
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  });
   
   // Login State
   const [loginId, setLoginId] = useState(''); // Registro for student
@@ -133,7 +144,65 @@ export default function App() {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   // Admin View State
-  const [adminTab, setAdminTab] = useState<'stats' | 'sync' | 'registrations' | 'validator' | 'visitas'>('registrations');
+  const [adminTab, setAdminTab] = useState<'stats' | 'sync' | 'registrations' | 'validator' | 'visitas'>(() => {
+    return (localStorage.getItem('ceic_adminTab') as any) || 'registrations';
+  });
+
+  // Keep localStorage perfectly in sync
+  useEffect(() => {
+    localStorage.setItem('ceic_userRole', userRole);
+  }, [userRole]);
+
+  useEffect(() => {
+    localStorage.setItem('ceic_loginMode', loginMode);
+  }, [loginMode]);
+
+  useEffect(() => {
+    if (currentStudent) {
+      localStorage.setItem('ceic_currentStudent', JSON.stringify(currentStudent));
+    } else {
+      localStorage.removeItem('ceic_currentStudent');
+    }
+  }, [currentStudent]);
+
+  useEffect(() => {
+    localStorage.setItem('ceic_adminTab', adminTab);
+  }, [adminTab]);
+
+  // Route Protection (Session Check)
+  useEffect(() => {
+    if (userRole && !['guest', 'student', 'admin'].includes(userRole)) {
+      handleLogout();
+    }
+  }, [userRole]);
+
+  // Handle Supabase error and log out immediately in case of invalid session / perm problems
+  const handleSupabaseError = (err: any): boolean => {
+    if (!err) return false;
+    const msg = err.message ? err.message.toLowerCase() : '';
+    const code = err.code ? String(err.code) : '';
+    const status = err.status ? Number(err.status) : 0;
+    
+    const isAuthError = 
+      status === 401 || 
+      status === 403 || 
+      code === '42501' || 
+      code === 'PGRST301' || 
+      msg.includes('permission') || 
+      msg.includes('denied') || 
+      msg.includes('policy') || 
+      msg.includes('authorized') ||
+      msg.includes('jwt') ||
+      msg.includes('unauthorized');
+
+    if (isAuthError) {
+      alert('Error de autenticación o permisos insuficientes. Acceso denegado, redirigiendo al inicio...');
+      handleLogout();
+      window.location.reload();
+      return true;
+    }
+    return false;
+  };
   
   // Visit Management State
   const [editingVisit, setEditingVisit] = useState<TechnicalVisit | null>(null);
@@ -471,16 +540,20 @@ export default function App() {
           setRegError('Error de Formato (UUID): La visita seleccionada no tiene un ID válido en la base de datos.');
           console.error("UUID Error payload:", { visitId, registroId });
         } else {
+          if (handleSupabaseError(error)) return;
           throw error;
         }
       } else {
         setMyRegistrations(prev => [...prev, visitId]);
         setShowRegModal(null);
         alert('¡Inscripción completada con éxito!');
+        window.location.reload();
       }
     } catch (err: any) {
       console.error(err);
-      setRegError(err.message || 'Error desconocido al registrar asistencia.');
+      if (!handleSupabaseError(err)) {
+        setRegError(err.message || 'Error desconocido al registrar asistencia.');
+      }
     } finally {
       setIsBooking(null);
     }
@@ -522,6 +595,7 @@ export default function App() {
         .eq('visita_id', visitId);
 
       if (error) {
+        if (handleSupabaseError(error)) return;
         throw error;
       }
 
@@ -558,10 +632,13 @@ export default function App() {
 
       handleCloseCancelModal();
       alert('¡Inscripción anulada con éxito!');
+      window.location.reload();
     } catch (err: any) {
       if (!isMounted.current) return;
       console.error(err);
-      setRegError(err.message || 'Error al anular la inscripción.');
+      if (!handleSupabaseError(err)) {
+        setRegError(err.message || 'Error al anular la inscripción.');
+      }
     } finally {
       if (isMounted.current) {
         setIsCanceling(false);
@@ -626,7 +703,10 @@ export default function App() {
           .eq('id', editingVisit.id)
           .select();
         
-        if (error) throw error;
+        if (error) {
+          if (handleSupabaseError(error)) return;
+          throw error;
+        }
 
         if (!isMounted.current) return;
 
@@ -642,7 +722,10 @@ export default function App() {
           .insert([payload])
           .select();
         
-        if (error) throw error;
+        if (error) {
+          if (handleSupabaseError(error)) return;
+          throw error;
+        }
 
         if (!isMounted.current) return;
 
@@ -662,10 +745,13 @@ export default function App() {
 
       handleCloseVisitModal();
       alert('Visita guardada correctamente');
+      window.location.reload();
     } catch (err: any) {
       if (!isMounted.current) return;
       console.error(err);
-      alert('Error al guardar visita: ' + err.message);
+      if (!handleSupabaseError(err)) {
+        alert('Error al guardar visita: ' + err.message);
+      }
     } finally {
       if (isMounted.current) {
         setIsSavingVisit(false);
@@ -680,10 +766,17 @@ export default function App() {
         .from('visitas')
         .delete()
         .eq('id', id);
-      if (error) throw error;
+      if (error) {
+        if (handleSupabaseError(error)) return;
+        throw error;
+      }
       await fetchVisits();
+      alert('Visita eliminada con éxito');
+      window.location.reload();
     } catch (err: any) {
-      alert('Error al eliminar visita: ' + err.message);
+      if (!handleSupabaseError(err)) {
+        alert('Error al eliminar visita: ' + err.message);
+      }
     }
   };
   const exportToPDF = () => {
@@ -877,6 +970,10 @@ export default function App() {
   };
 
   const handleLogout = () => {
+    localStorage.removeItem('ceic_userRole');
+    localStorage.removeItem('ceic_loginMode');
+    localStorage.removeItem('ceic_currentStudent');
+    localStorage.removeItem('ceic_adminTab');
     setUserRole('guest');
     setLoginMode('select');
     setCurrentStudent(null);
@@ -1012,8 +1109,19 @@ export default function App() {
 
   const handleDeleteRegistration = async (id: string) => {
     if (!confirm('¿Seguro que desea eliminar esta inscripción?')) return;
-    const { error } = await supabase.from('inscripciones').delete().eq('id', id);
-    if (!error) fetchAllRegistrations();
+    try {
+      const { error } = await supabase.from('inscripciones').delete().eq('id', id);
+      if (error) {
+        if (handleSupabaseError(error)) return;
+        throw error;
+      }
+      alert('Inscripción eliminada con éxito');
+      window.location.reload();
+    } catch (err: any) {
+      if (!handleSupabaseError(err)) {
+        alert('Error al eliminar inscripción: ' + err.message);
+      }
+    }
   };
 
   const exportRegistrationsToPDF = () => {
