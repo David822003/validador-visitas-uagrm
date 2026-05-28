@@ -11,7 +11,7 @@ import { TechnicalVisit } from '../types';
 interface AsistenciaRegistro {
   id: string;
   visita_id: string;
-  estudiante_registro: string;
+  ticket_id: string;
   nombre_estudiante: string;
   fecha_ingreso: string;
   is_eligible_pre?: boolean; // locally resolved or database field
@@ -21,6 +21,30 @@ interface AsistenciaVisitasProps {
   visits?: TechnicalVisit[];
   onSupabaseError?: (err: any) => boolean;
 }
+
+const extractTicketId = (qrText: string): string => {
+  const trimmed = qrText.trim();
+  try {
+    if (trimmed.includes('://') || trimmed.includes('?')) {
+      const urlMatch = trimmed.match(/[?&]validar=([^&]+)/);
+      if (urlMatch && urlMatch[1]) {
+        return urlMatch[1];
+      }
+      const lastNumMatch = trimmed.match(/[\/=?](\d+)$/);
+      if (lastNumMatch && lastNumMatch[1]) {
+        return lastNumMatch[1];
+      }
+      try {
+        const parsedUrl = new URL(trimmed);
+        const valPara = parsedUrl.searchParams.get('validar');
+        if (valPara) return valPara;
+      } catch (err) {}
+    }
+  } catch (e) {
+    console.warn("Error extracting ticket_id from QR:", e);
+  }
+  return trimmed;
+};
 
 // Play feedback beep sound using standard Web Audio API
 const playBeep = (type: 'success' | 'error') => {
@@ -227,7 +251,7 @@ export default function AsistenciaVisitas({ visits: propVisits, onSupabaseError 
     }
 
     setScanStatus('Procesando código scanned...');
-    const cleanedCode = codeText.trim();
+    const cleanedCode = extractTicketId(codeText);
 
     try {
       // Step 1: Look up student information in DB
@@ -278,7 +302,7 @@ export default function AsistenciaVisitas({ visits: propVisits, onSupabaseError 
       }
 
       // Step 3: Check if already registered in attendance table to avoid duplicates
-      const isDuplicate = registros.some(r => r.estudiante_registro === studentRegistro);
+      const isDuplicate = registros.some(r => r.ticket_id === studentRegistro);
       if (isDuplicate) {
         playBeep('error');
         setScannedResult({
@@ -295,7 +319,7 @@ export default function AsistenciaVisitas({ visits: propVisits, onSupabaseError 
       // Step 4: Save attendance to supabase table 'asistencia_visitas'
       const payload = {
         visita_id: selectedVisitId,
-        estudiante_registro: studentRegistro,
+        ticket_id: studentRegistro,
         nombre_estudiante: studentNombre,
         fecha_ingreso: new Date().toISOString()
       };
@@ -361,7 +385,7 @@ export default function AsistenciaVisitas({ visits: propVisits, onSupabaseError 
       alert('Por favor, escoja una visita primero.');
       return;
     }
-    const targetId = manualReg.trim();
+    const targetId = extractTicketId(manualReg);
     if (!targetId) return;
 
     setIsManualSubmitting(true);
@@ -405,7 +429,7 @@ export default function AsistenciaVisitas({ visits: propVisits, onSupabaseError 
       if (inscData) isPreReg = true;
 
       // Duplicate check
-      const isDuplicate = registros.some(r => r.estudiante_registro === studentRegistro);
+      const isDuplicate = registros.some(r => r.ticket_id === studentRegistro);
       if (isDuplicate) {
         alert('Este estudiante ya cuenta con asistencia registrada para esta visita.');
         setIsManualSubmitting(false);
@@ -416,7 +440,7 @@ export default function AsistenciaVisitas({ visits: propVisits, onSupabaseError 
         .from('asistencia_visitas')
         .insert([{
           visita_id: selectedVisitId,
-          estudiante_registro: studentRegistro,
+          ticket_id: studentRegistro,
           nombre_estudiante: studentNombre,
           fecha_ingreso: new Date().toISOString()
         }]);
@@ -463,7 +487,7 @@ export default function AsistenciaVisitas({ visits: propVisits, onSupabaseError 
     const term = searchTerm.toLowerCase();
     return (
       r.nombre_estudiante.toLowerCase().includes(term) ||
-      r.estudiante_registro.toLowerCase().includes(term)
+      (r.ticket_id && r.ticket_id.toLowerCase().includes(term))
     );
   });
 
@@ -711,7 +735,7 @@ export default function AsistenciaVisitas({ visits: propVisits, onSupabaseError 
                               <p className="font-extrabold text-white text-sm max-w-[200px] md:max-w-xs truncate">{reg.nombre_estudiante}</p>
                               <div className="flex items-center gap-2 mt-0.5">
                                 <span className="font-mono text-[10px] text-slate-500 bg-slate-950/70 border border-slate-900 px-1.5 py-0.5 rounded">
-                                  {reg.estudiante_registro}
+                                  {reg.ticket_id}
                                 </span>
                               </div>
                             </div>
