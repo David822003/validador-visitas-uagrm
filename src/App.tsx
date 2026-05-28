@@ -11,6 +11,7 @@ import { parseStudentReport, parseComplementReport } from './lib/parser';
 import { supabase } from './lib/supabase';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 
 // --- Components ---
 
@@ -132,6 +133,7 @@ export default function App() {
   const [selectedVisitForStatus, setSelectedVisitForStatus] = useState<TechnicalVisit | null>(null);
   const [enrolledStudents, setEnrolledStudents] = useState<any[]>([]);
   const [isLoadingStatus, setIsLoadingStatus] = useState(false);
+  const [showExportDropdown, setShowExportDropdown] = useState(false);
   const [visitForm, setVisitForm] = useState({
     nombre: '',
     descripcion: '',
@@ -250,7 +252,11 @@ export default function App() {
       // Fallback selection if the join fails due to missing relationships
       const { data: fallbackData } = await supabase.from('inscripciones').select('*');
       if (fallbackData) {
-        setAllRegistrations(fallbackData);
+        setAllRegistrations(fallbackData.map((r: any) => ({
+          ...r,
+          estado: r.estado || 'INSCRITO',
+          motivo_anulacion: r.motivo_anulacion || ''
+        })));
       }
       return;
     }
@@ -260,7 +266,9 @@ export default function App() {
         ...r,
         // Prioritize manual columns added by the user, fallback to join if needed
         nombre_estudiante: r.nombre_estudiante || r.estudiantes?.nombre || 'Estudiante N/D',
-        nombre_visita: r.nombre_visita || 'Visita N/D'
+        nombre_visita: r.nombre_visita || 'Visita N/D',
+        estado: r.estado || 'INSCRITO',
+        motivo_anulacion: r.motivo_anulacion || ''
       })));
     }
   };
@@ -503,6 +511,22 @@ export default function App() {
       setMyRegistrations(prev => prev.filter(id => id !== visitId));
       setCanceledRegistrations(prev => [...prev, visitId]);
       
+      // Update allRegistrations state immediately so that any administrative views re-render in real-time
+      setAllRegistrations(prev => prev.map(r => {
+        if (r.estudiante_registro === registroId && r.visita_id === visitId) {
+          return { ...r, estado: 'ANULADO', motivo_anulacion: cancelReason.trim() };
+        }
+        return r;
+      }));
+
+      // Also update enrolledStudents if visible
+      setEnrolledStudents(prev => prev.map(r => {
+        if (r.estudiante_registro === registroId && r.visita_id === visitId) {
+          return { ...r, estado: 'ANULADO', motivo_anulacion: cancelReason.trim() };
+        }
+        return r;
+      }));
+
       // Update counts globally by fetching all registrations
       try {
         await fetchAllRegistrations();
@@ -609,99 +633,194 @@ export default function App() {
       alert('Error al eliminar visita: ' + err.message);
     }
   };
-  const handleExportPDF = () => {
+  const exportToPDF = () => {
     if (!selectedVisitForStatus) return;
     
-    const doc = new jsPDF();
+    // Create new PDF layout (A4 vertical)
+    const doc = new jsPDF('p', 'mm', 'a4');
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
-    const margin = 10;
+    const margin = 14;
 
-    // 1. Draw Border (Blue dark #001f3f)
-    doc.setDrawColor(0, 31, 63); // #001f3f
-    doc.setLineWidth(1.5);
-    doc.rect(margin, margin, pageWidth - (margin * 2), pageHeight - (margin * 2));
+    // Elegant Top Header Accent Banner Bar in green esmeralda oscuro #047857
+    doc.setFillColor(4, 120, 87); // #047857
+    doc.rect(0, 0, pageWidth, 28, 'F');
 
-    // 2. Main Title
+    // Title inside the banner in white letters
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(22);
-    doc.setTextColor(0, 31, 63);
-    doc.text("VISITA TÉCNICA", pageWidth / 2, 25, { align: "center" });
+    doc.setFontSize(11);
+    doc.setTextColor(255, 255, 255);
+    doc.text("CONGRESO DE ESTUDIANTES DE INGENIERÍA CIVIL - CEIC 2026", pageWidth / 2, 11, { align: "center" });
+    doc.setFontSize(13);
+    doc.text("REPORTE OFICIAL DE ASISTENCIA A VISITA TÉCNICA", pageWidth / 2, 18, { align: "center" });
 
-    // 3. Visit Details Table-like layout
-    doc.setFontSize(12);
-    doc.setTextColor(51, 65, 85); // slate-700
+    // Highlighted Callout box with General Visit Info
+    const boxY = 34;
+    const boxHeight = 35;
+    doc.setFillColor(248, 250, 252); // slate-50 background / #f8fafc sutil
+    doc.setDrawColor(226, 232, 240); // slate-200 boundary
+    doc.setLineWidth(0.1);
+    doc.roundedRect(margin, boxY, pageWidth - (margin * 2), boxHeight, 3, 3, 'FD');
     
-    const detailsY = 40;
+    // Left boundary accent strip in deep green
+    doc.setFillColor(4, 120, 87);
+    doc.rect(margin, boxY, 3, boxHeight, 'F');
+
     doc.setFont("helvetica", "bold");
-    doc.text("DETALLES DE LA VISITA", margin + 10, detailsY);
-    doc.setLineWidth(0.5);
-    doc.line(margin + 10, detailsY + 2, margin + 80, detailsY + 2);
+    doc.setFontSize(11);
+    doc.setTextColor(15, 23, 42); // slate-900
+    doc.text(`Visita: ${selectedVisitForStatus.nombre}`, margin + 8, boxY + 8);
 
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    doc.text(`LUGAR / ESTADO:`, margin + 10, detailsY + 10);
+    doc.setFontSize(9.5);
+    doc.setTextColor(71, 85, 105); // slate-600
+    doc.text(`Ubicación / Planta:`, margin + 8, boxY + 16);
     doc.setFont("helvetica", "bold");
-    doc.text(`${selectedVisitForStatus.nombre}`, margin + 50, detailsY + 10);
-    
-    doc.setFont("helvetica", "normal");
-    doc.text(`FECHA:`, margin + 10, detailsY + 18);
-    doc.setFont("helvetica", "bold");
-    doc.text(`${selectedVisitForStatus.fecha}`, margin + 50, detailsY + 18);
-    
-    doc.setFont("helvetica", "normal");
-    doc.text(`HORARIO:`, margin + 10, detailsY + 26);
-    doc.setFont("helvetica", "bold");
-    doc.text(`${selectedVisitForStatus.horario}`, margin + 50, detailsY + 26);
-    
-    doc.setFont("helvetica", "normal");
-    doc.text(`CUPOS INSCRITOS:`, margin + 10, detailsY + 34);
-    doc.setFont("helvetica", "bold");
-    doc.text(`${enrolledStudents.filter((r: any) => r.estado !== 'ANULADO').length} / ${selectedVisitForStatus.cupos_max}`, margin + 50, detailsY + 34);
+    doc.setTextColor(15, 23, 42);
+    doc.text(`${selectedVisitForStatus.descripcion || 'No especificada'}`, margin + 42, boxY + 16);
 
-    // 4. Students Table
-    const tableData = enrolledStudents
-      .filter((reg: any) => reg.estado !== 'ANULADO')
-      .map(reg => [
-        reg.student?.nombre || reg.nombre_estudiante || '---',
-        reg.estudiante_registro,
-        reg.student?.carrera || '---',
-        reg.student?.celular || reg.student?.telefono || '---'
-      ]);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(71, 85, 105);
+    doc.text(`Fecha y Hora:`, margin + 8, boxY + 23);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(15, 23, 42);
+    doc.text(`${selectedVisitForStatus.fecha} | ${selectedVisitForStatus.horario || 'N/D'}`, margin + 31, boxY + 23);
+
+    const totalInscritos = enrolledStudents.filter((r: any) => (r.estado || 'INSCRITO') !== 'ANULADO').length;
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(71, 85, 105);
+    doc.text(`Cupos de Asistencia:`, margin + 8, boxY + 30);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(15, 23, 42);
+    doc.text(`${totalInscritos} Ocupados / ${selectedVisitForStatus.cupos_max} Totales`, margin + 42, boxY + 30);
+
+    // Build Table Rows With Columns: N°, Registro, Nombre, Tipo, Estado, Motivo
+    const formattedData = enrolledStudents.map((reg: any, index: number) => {
+      const isAnulado = (reg.estado || 'INSCRITO') === 'ANULADO';
+      const student = reg.student || reg.estudiantes;
+      const isExt = !student || !student.registro;
+      return {
+        num: index + 1,
+        registro: reg.estudiante_registro || '---',
+        nombre: reg.student?.nombre || reg.nombre_estudiante || '---',
+        tipo: isExt ? 'Externo' : 'Interno',
+        estado: reg.estado || 'INSCRITO',
+        motivo: reg.motivo_anulacion || '---',
+        isAnulado: isAnulado
+      };
+    });
+
+    const headers = [['N°', 'Registro/Ticket', 'Nombre del Estudiante', 'Tipo', 'Estado', 'Motivo de Anulación']];
+    const bodyRows = formattedData.map(r => [
+      r.num,
+      r.registro,
+      r.nombre,
+      r.tipo,
+      r.estado,
+      r.motivo
+    ]);
 
     autoTable(doc, {
-      startY: detailsY + 45,
-      head: [['Estudiante', 'Registro', 'Carrera', 'Contacto']],
-      body: tableData,
-      margin: { left: margin + 10, right: margin + 10 },
+      startY: boxY + boxHeight + 8,
+      head: headers,
+      body: bodyRows,
+      margin: { left: margin, right: margin },
       styles: {
         fontSize: 9,
-        cellPadding: 3,
-        font: "helvetica"
+        cellPadding: 4.5,
+        font: "helvetica",
+        lineColor: [226, 232, 240], // #e2e8f0 fine lines
+        lineWidth: 0.1
       },
       headStyles: {
-        fillColor: [0, 31, 63],
+        fillColor: [4, 120, 87], // #047857 esmeralda oscuro
         textColor: [255, 255, 255],
         fontStyle: 'bold'
       },
       alternateRowStyles: {
-        fillColor: [248, 250, 252] // slate-50
+        fillColor: [241, 245, 249] // Alternancia con gris muy claro #f1f5f9
       },
-      theme: 'grid'
+      theme: 'striped',
+      didParseCell: function (data) {
+        const rowIndex = data.row.index;
+        const rowData = formattedData[rowIndex];
+        if (rowData && rowData.isAnulado) {
+          data.cell.styles.textColor = [220, 38, 38]; // clear soft red highlight for annulled rows
+          data.cell.styles.fontStyle = 'normal';
+        }
+      }
     });
 
-    // 5. Footer
-    const footerY = pageHeight - 20;
-    doc.setFontSize(10);
-    doc.setTextColor(0, 31, 63);
-    doc.setFont("helvetica", "bold");
-    doc.text("Dirección de Carrera de Ingeniería Civil", pageWidth / 2, footerY - 5, { align: "center" });
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(100, 116, 139);
-    doc.text("72191068 Coordinación de Carrera | 72191592 Secretaría de Ingeniería Civil", pageWidth / 2, footerY, { align: "center" });
+    // Executive Footer block
+    const footerY = pageHeight - 15;
+    doc.setDrawColor(226, 232, 240); // slate-200
+    doc.setLineWidth(0.5);
+    doc.line(margin, footerY - 5, pageWidth - margin, footerY - 5);
 
-    doc.save(`Inscritos_${selectedVisitForStatus.nombre.replace(/\s/g, '_')}.pdf`);
+    doc.setFontSize(8.5);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(4, 120, 87);
+    doc.text("Dirección de Carrera de Ingeniería Civil - CEIC", pageWidth / 2, footerY, { align: "center" });
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.5);
+    doc.setTextColor(148, 163, 184); // slate-400
+    doc.text(`Reporte generado de forma dinámica el ${new Date().toLocaleString()}`, pageWidth / 2, footerY + 5, { align: "center" });
+
+    const safeName = selectedVisitForStatus.nombre.replace(/[^a-z0-9]/gi, '_');
+    doc.save(`Reporte_Visita_${safeName}.pdf`);
+  };
+
+  const exportToExcel = () => {
+    if (!selectedVisitForStatus) return;
+
+    // Build general info block at rows 1-4
+    const headerRows = [
+      ["CONGRESO DE ESTUDIANTES DE INGENIERÍA CIVIL - REPORTE DE ASISTENCIA"],
+      ["Empresa / Visita:", selectedVisitForStatus.nombre],
+      ["Fecha / Hora de Visita:", `${selectedVisitForStatus.fecha} | ${selectedVisitForStatus.horario || 'N/D'}`],
+      ["Ubicación / Planta:", selectedVisitForStatus.descripcion || 'No especificada'],
+      [], // Blank separator row
+      ["N°", "Registro / Ticket", "Nombre Completo", "Tipo de Inscripción", "Estado", "Observación / Motivo"] // Table Header at Row 6
+    ];
+
+    const studentRows = enrolledStudents.map((reg: any, index: number) => {
+      const student = reg.student || reg.estudiantes;
+      const isExt = !student || !student.registro;
+      return [
+        index + 1,
+        reg.estudiante_registro || '---',
+        reg.student?.nombre || reg.nombre_estudiante || '---',
+        isExt ? 'Externo' : 'Interno',
+        reg.estado || 'INSCRITO',
+        reg.motivo_anulacion || '---'
+      ];
+    });
+
+    const finalAoa = [...headerRows, ...studentRows];
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(finalAoa);
+
+    // Apply auto-fit column widths
+    const colWidths = [6, 22, 35, 18, 18, 35]; // minimum lengths
+    finalAoa.forEach((row) => {
+      row.forEach((value, colIndex) => {
+        if (colIndex < colWidths.length) {
+          const textValue = value !== undefined && value !== null ? String(value) : '';
+          if (textValue.length + 3 > colWidths[colIndex]) {
+            colWidths[colIndex] = textValue.length + 3;
+          }
+        }
+      });
+    });
+
+    ws['!cols'] = colWidths.map(w => ({ wch: w }));
+
+    XLSX.utils.book_append_sheet(wb, ws, "Asistencia_CEIC");
+
+    const safeName = selectedVisitForStatus.nombre.replace(/[^a-z0-9]/gi, '_');
+    XLSX.writeFile(wb, `Reporte_Visita_${safeName}.xlsx`);
   };
 
   const handleLogout = () => {
@@ -844,17 +963,198 @@ export default function App() {
     if (!error) fetchAllRegistrations();
   };
 
-  const exportConsolidated = () => {
-    const csvContent = "data:text/csv;charset=utf-8," 
-      + ["Estudiante,Registro,Carrera,Visita,Fecha"].join(",") + "\n"
-      + filteredRegistrations.map(r => [r.nombre_estudiante, r.estudiante_registro, r.estudiantes?.carrera, r.nombre_visita, r.fecha_inscripcion].join(",")).join("\n");
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "consolidado_visitas.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const exportRegistrationsToPDF = () => {
+    // Create new PDF layout (A4 vertical)
+    const doc = new jsPDF('p', 'mm', 'a4');
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 14;
+
+    const selectedVisitObj = availableVisits.find(v => v.id === filterVisit);
+    const visitName = selectedVisitObj ? selectedVisitObj.nombre : "Consolidado - Todas las Visitas";
+    const visitDate = selectedVisitObj ? selectedVisitObj.fecha : "Múltiples Fechas";
+    const visitLocation = selectedVisitObj ? (selectedVisitObj.descripcion || "No especificada") : "Múltiples Ubicaciones";
+    const totalCuposMax = selectedVisitObj ? selectedVisitObj.cupos_max : undefined;
+
+    // Elegant Top Header Accent Banner Bar in green esmeralda oscuro #047857
+    doc.setFillColor(4, 120, 87); // #047857
+    doc.rect(0, 0, pageWidth, 28, 'F');
+
+    // Title inside the banner in white letters
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.setTextColor(255, 255, 255);
+    doc.text("CONGRESO DE ESTUDIANTES DE INGENIERÍA CIVIL - CEIC 2026", pageWidth / 2, 11, { align: "center" });
+    doc.setFontSize(13);
+    doc.text("REPORTE OFICIAL DE ASISTENCIA", pageWidth / 2, 18, { align: "center" });
+
+    // Highlighted Callout box with General Visit Info
+    const boxY = 34;
+    const boxHeight = 35;
+    doc.setFillColor(248, 250, 252); // slate-50 background / #f8fafc sutil
+    doc.setDrawColor(226, 232, 240); // slate-200 boundary
+    doc.setLineWidth(0.1);
+    doc.roundedRect(margin, boxY, pageWidth - (margin * 2), boxHeight, 3, 3, 'FD');
+    
+    // Left boundary accent strip in deep green
+    doc.setFillColor(4, 120, 87);
+    doc.rect(margin, boxY, 3, boxHeight, 'F');
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.setTextColor(15, 23, 42); // slate-900
+    doc.text(`Visita: ${visitName}`, margin + 8, boxY + 8);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9.5);
+    doc.setTextColor(71, 85, 105); // slate-600
+    doc.text(`Ubicación / Planta:`, margin + 8, boxY + 16);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(15, 23, 42);
+    doc.text(`${visitLocation}`, margin + 42, boxY + 16);
+
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(71, 85, 105);
+    doc.text(`Fecha y Hora:`, margin + 8, boxY + 23);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(15, 23, 42);
+    doc.text(`${selectedVisitObj ? `${selectedVisitObj.fecha} | ${selectedVisitObj.horario || 'N/D'}` : 'Consolidado General'}`, margin + 31, boxY + 23);
+
+    const totalInscritos = filteredRegistrations.filter((r: any) => (r.estado || 'INSCRITO') !== 'ANULADO').length;
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(71, 85, 105);
+    doc.text(`Cupos de Asistencia:`, margin + 8, boxY + 30);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(15, 23, 42);
+    doc.text(`${totalInscritos} Ocupados ${totalCuposMax ? `/ ${totalCuposMax} Totales` : ''}`, margin + 42, boxY + 30);
+
+    // Build Table Rows With Columns: N°, Registro, Nombre, Tipo, Estado, Motivo
+    const formattedData = filteredRegistrations.map((reg: any, index: number) => {
+      const isAnulado = (reg.estado || 'INSCRITO') === 'ANULADO';
+      const student = reg.student || reg.estudiantes;
+      const isExt = !student || !student.registro;
+      return {
+        num: index + 1,
+        registro: reg.estudiante_registro || '---',
+        nombre: reg.nombre_estudiante || student?.nombre || '---',
+        tipo: isExt ? 'Externo' : 'Interno',
+        estado: reg.estado || 'INSCRITO',
+        motivo: reg.motivo_anulacion || '---',
+        isAnulado: isAnulado
+      };
+    });
+
+    const headers = [['N°', 'Registro/Ticket', 'Nombre del Estudiante', 'Tipo', 'Estado', 'Motivo de Anulación']];
+    const bodyRows = formattedData.map(r => [
+      r.num,
+      r.registro,
+      r.nombre,
+      r.tipo,
+      r.estado,
+      r.motivo
+    ]);
+
+    autoTable(doc, {
+      startY: boxY + boxHeight + 8,
+      head: headers,
+      body: bodyRows,
+      margin: { left: margin, right: margin },
+      styles: {
+        fontSize: 9,
+        cellPadding: 4.5, // Padding para que el texto respire
+        font: "helvetica",
+        lineColor: [226, 232, 240], // Fine division lines
+        lineWidth: 0.1
+      },
+      headStyles: {
+        fillColor: [4, 120, 87], // #047857 esmeralda oscuro
+        textColor: [255, 255, 255],
+        fontStyle: 'bold'
+      },
+      alternateRowStyles: {
+        fillColor: [241, 245, 249] // Alternancia con gris muy claro #f1f5f9
+      },
+      theme: 'striped',
+      didParseCell: function (data) {
+        const rowIndex = data.row.index;
+        const rowData = formattedData[rowIndex];
+        if (rowData && rowData.isAnulado) {
+          data.cell.styles.textColor = [220, 38, 38]; // Soft/clear red color for annulled rows
+          data.cell.styles.fontStyle = 'normal';
+        }
+      }
+    });
+
+    // Executive Footer block
+    const footerY = pageHeight - 15;
+    doc.setDrawColor(226, 232, 240); // slate-200
+    doc.setLineWidth(0.5);
+    doc.line(margin, footerY - 5, pageWidth - margin, footerY - 5);
+
+    doc.setFontSize(8.5);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(4, 120, 87);
+    doc.text("Dirección de Carrera de Ingeniería Civil - CEIC", pageWidth / 2, footerY, { align: "center" });
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.5);
+    doc.setTextColor(148, 163, 184); // slate-400
+    doc.text(`Reporte generado de forma dinámica el ${new Date().toLocaleString()}`, pageWidth / 2, footerY + 5, { align: "center" });
+
+    const safeFilename = visitName.replace(/[^a-z0-9]/gi, '_');
+    doc.save(`Reporte_Visita_${safeFilename}.pdf`);
+  };
+
+  const exportRegistrationsToExcel = () => {
+    const selectedVisitObj = availableVisits.find(v => v.id === filterVisit);
+    const visitName = selectedVisitObj ? selectedVisitObj.nombre : "Consolidado - Todas las Visitas";
+    const visitDate = selectedVisitObj ? selectedVisitObj.fecha : "Múltiples Fechas";
+    const visitLocation = selectedVisitObj ? (selectedVisitObj.descripcion || "No especificada") : "Múltiples Ubicaciones";
+
+    const headerRows = [
+      ["CONGRESO DE ESTUDIANTES DE INGENIERÍA CIVIL - CEIC 2026"],
+      ["Reporte Oficial de Asistencias - CEIC 2026"],
+      ["Empresa / Visita:", visitName],
+      ["Fecha / Ubicación:", `${visitDate} | Planta/Lugar: ${visitLocation}`],
+      [], // Blank separator row
+      ["N°", "Registro / Ticket", "Nombre Completo", "Tipo de Inscripción", "Estado", "Observación / Motivo"] // Table Header at Row 6
+    ];
+
+    const studentRows = filteredRegistrations.map((reg: any, index: number) => {
+      const student = reg.student || reg.estudiantes;
+      const isExt = !student || !student.registro;
+      return [
+        index + 1,
+        reg.estudiante_registro || '---',
+        reg.nombre_estudiante || student?.nombre || '---',
+        isExt ? 'Externo' : 'Interno',
+        reg.estado || 'INSCRITO',
+        reg.motivo_anulacion || '---'
+      ];
+    });
+
+    const finalAoa = [...headerRows, ...studentRows];
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(finalAoa);
+
+    // Apply auto-fit column widths
+    const colWidths = [6, 22, 35, 18, 18, 35]; // minimum lengths
+    finalAoa.forEach((row) => {
+      row.forEach((value, colIndex) => {
+        if (colIndex < colWidths.length) {
+          const textValue = value !== undefined && value !== null ? String(value) : '';
+          if (textValue.length + 3 > colWidths[colIndex]) {
+            colWidths[colIndex] = textValue.length + 3;
+          }
+        }
+      });
+    });
+
+    ws['!cols'] = colWidths.map(w => ({ wch: w }));
+    XLSX.utils.book_append_sheet(wb, ws, "Asistencia_CEIC");
+
+    const safeFilename = visitName.replace(/[^a-z0-9]/gi, '_');
+    XLSX.writeFile(wb, `Reporte_Visita_${safeFilename}.xlsx`);
   };
 
   // --- Views ---
@@ -882,10 +1182,11 @@ export default function App() {
               </div>
 
               <motion.button 
+                initial={{ borderColor: 'rgba(16, 185, 129, 0.2)' }}
                 whileHover={{ scale: 1.05, borderColor: 'rgba(245, 158, 11, 0.4)' }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setLoginMode('student')}
-                className="bg-slate-900/40 backdrop-blur-md border border-emerald-500/20 p-10 rounded-[2.5rem] flex flex-col items-center gap-6 hover:bg-slate-900/60 transition-all group shadow-2xl"
+                className="bg-slate-900/40 backdrop-blur-md border p-10 rounded-[2.5rem] flex flex-col items-center gap-6 hover:bg-slate-900/60 transition-all group shadow-2xl"
               >
                 <div className="w-24 h-24 rounded-full bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center shadow-2xl group-hover:from-emerald-400 group-hover:to-teal-600 transition-colors border border-emerald-400/20">
                   <GraduationCap className="w-12 h-12 text-white" />
@@ -897,10 +1198,11 @@ export default function App() {
               </motion.button>
 
               <motion.button 
+                initial={{ borderColor: 'rgba(16, 185, 129, 0.2)' }}
                 whileHover={{ scale: 1.05, borderColor: 'rgba(245, 158, 11, 0.4)' }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setLoginMode('admin')}
-                className="bg-slate-900/40 backdrop-blur-md border border-emerald-500/20 p-10 rounded-[2.5rem] flex flex-col items-center gap-6 hover:bg-slate-900/60 transition-all group shadow-2xl"
+                className="bg-slate-900/40 backdrop-blur-md border p-10 rounded-[2.5rem] flex flex-col items-center gap-6 hover:bg-slate-900/60 transition-all group shadow-2xl"
               >
                 <div className="w-24 h-24 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-2xl group-hover:from-amber-300 group-hover:to-amber-500 transition-colors border border-amber-300/20">
                   <ShieldCheck className="w-12 h-12 text-teal-950" />
@@ -1786,15 +2088,46 @@ export default function App() {
                           )}
                         </div>
 
-                        <div className="mt-8 flex justify-end gap-4">
-                          <button 
-                            onClick={handleExportPDF}
-                            disabled={enrolledStudents.length === 0}
-                            className="bg-gradient-to-r from-amber-500 to-amber-600 text-teal-950 px-8 h-14 rounded-2xl font-black shadow-lg hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-2 disabled:opacity-30"
-                          >
-                            <FileText size={20}/>
-                            Exportar PDF
-                          </button>
+                        <div className="mt-8 flex justify-end gap-4 relative">
+                          <div className="relative">
+                            <button 
+                              onClick={() => setShowExportDropdown(!showExportDropdown)}
+                              disabled={enrolledStudents.length === 0}
+                              className="bg-gradient-to-r from-amber-500 to-amber-600 text-teal-950 px-8 h-14 rounded-2xl font-black shadow-lg hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-2 disabled:opacity-30"
+                            >
+                              <Download size={20}/>
+                              Exportar...
+                            </button>
+
+                            <AnimatePresence>
+                              {showExportDropdown && (
+                                <>
+                                  <div className="fixed inset-0 z-30" onClick={() => setShowExportDropdown(false)}></div>
+                                  <motion.div 
+                                    initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                                    exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                                    className="absolute right-0 bottom-full mb-3 w-48 rounded-2xl bg-[#011411] border border-emerald-500/20 text-white shadow-2xl z-40 overflow-hidden divide-y divide-emerald-500/10"
+                                  >
+                                    <button 
+                                      onClick={() => { exportToPDF(); setShowExportDropdown(false); }} 
+                                      className="w-full text-left px-5 py-4 hover:bg-emerald-950/40 transition-colors flex items-center gap-3 font-bold text-xs uppercase tracking-wider text-emerald-300 hover:text-white"
+                                    >
+                                      <FileText size={16} className="text-emerald-400"/>
+                                      Exportar PDF
+                                    </button>
+                                    <button 
+                                      onClick={() => { exportToExcel(); setShowExportDropdown(false); }} 
+                                      className="w-full text-left px-5 py-4 hover:bg-emerald-950/40 transition-colors flex items-center gap-3 font-bold text-xs uppercase tracking-wider text-amber-400 hover:text-white"
+                                    >
+                                      <Database size={16} className="text-amber-500"/>
+                                      Exportar Excel
+                                    </button>
+                                  </motion.div>
+                                </>
+                              )}
+                            </AnimatePresence>
+                          </div>
                         </div>
                       </motion.div>
                     </motion.div>
@@ -1826,14 +2159,14 @@ export default function App() {
                           <span className="text-xs font-black uppercase text-slate-400 tracking-widest truncate max-w-[200px]" title={v.nombre}>{v.nombre}</span>
                         </div>
                         <div className="text-5xl font-black text-slate-800">
-                          {allRegistrations.filter(r => r.visita_id === v.id).length}<span className="text-2xl text-slate-350">/{v.cupos_max}</span>
+                          {allRegistrations.filter(r => r.visita_id === v.id && r.estado !== 'ANULADO').length}<span className="text-2xl text-slate-350">/{v.cupos_max}</span>
                         </div>
                         <div className="w-full bg-slate-100 h-2 rounded-full mt-6 overflow-hidden border border-slate-200">
                           <div 
                             className="bg-gradient-to-r from-emerald-500 to-amber-500 h-full rounded-full transition-all duration-1000" 
                             style={{
                               width: `${Math.min(100, (v.cupos_max > 0) 
-                                ? (allRegistrations.filter(r => r.visita_id === v.id).length / v.cupos_max) * 100 
+                                ? (allRegistrations.filter(r => r.visita_id === v.id && r.estado !== 'ANULADO').length / v.cupos_max) * 100 
                                 : 0)}%`
                             }}
                           ></div>
@@ -1927,8 +2260,15 @@ export default function App() {
                          <option value="all">Todas las visitas</option>
                          {availableVisits.map(v => <option key={v.id} value={v.id}>{v.nombre}</option>)}
                        </select>
-                       <button onClick={exportConsolidated} className="h-12 px-6 bg-[#01241f] text-white rounded-xl font-bold text-sm flex items-center gap-2 hover:scale-[1.02] active:scale-95 transition-all shadow-lg active:bg-slate-900 border border-transparent">
-                         <Download size={18}/> Exportar CSV
+                       <button onClick={exportRegistrationsToExcel} className="h-12 px-5 bg-[#107c41] hover:bg-[#0d6132] text-white rounded-xl font-bold text-sm flex items-center gap-2 hover:scale-[1.02] active:scale-95 transition-all shadow-md border border-transparent">
+                         <FileText size={18} /> Exportar Excel
+                       </button>
+                       <button 
+                         onClick={exportRegistrationsToPDF} 
+                         className="h-12 px-5 bg-[#b30b0b] hover:bg-[#910909] text-white rounded-xl font-bold text-sm flex items-center gap-2 hover:scale-[1.02] active:scale-95 transition-all shadow-md border border-transparent"
+                         id="btn-registrations-pdf"
+                       >
+                         <FileText size={18} /> Exportar PDF
                        </button>
                      </div>
                   </div>
