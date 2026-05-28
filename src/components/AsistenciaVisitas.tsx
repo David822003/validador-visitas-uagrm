@@ -254,55 +254,98 @@ export default function AsistenciaVisitas({ visits: propVisits, onSupabaseError 
     const cleanedCode = extractTicketId(codeText);
 
     try {
-      // Step 1: Look up student information in DB
-      let studentRegistro = cleanedCode;
-      let studentNombre = 'Estudiante Registrado';
-      let isPreRegistered = false;
-
-      // 1.a: Check in general congress registrations
-      const { data: congressoData, error: congErr } = await supabase
+      // Step 1: Look up student information in DB using cleanedCode as the id of `inscripciones_congreso`
+      const { data: congData, error: congErr } = await supabase
         .from('inscripciones_congreso')
         .select('*')
-        .or(`registro_universitario.eq."${cleanedCode}",id_ticket.eq."${cleanedCode}",cedula_identidad.eq."${cleanedCode}"`);
+        .eq('id', Number(cleanedCode) || cleanedCode)
+        .maybeSingle();
 
-      if (congErr) console.warn("inscripciones_congreso lookup error:", congErr);
-
-      if (congressoData && congressoData.length > 0) {
-        const match = congressoData[0];
-        studentRegistro = match.registro_universitario || match.id_ticket || cleanedCode;
-        studentNombre = match.nombre || match.nombre_completo || 'Estudiante';
-      } else {
-        // 1.b: Fallback to general students table
-        const { data: localData, error: localErr } = await supabase
-          .from('estudiantes')
-          .select('*')
-          .or(`registro.eq."${cleanedCode}",ci.eq."${cleanedCode}"`);
-
-        if (localErr) console.warn("estudiantes lookup error:", localErr);
-
-        if (localData && localData.length > 0) {
-          const match = localData[0];
-          studentRegistro = match.registro || cleanedCode;
-          studentNombre = match.nombre || 'Estudiante';
-        }
+      if (congErr) {
+        console.warn("inscripciones_congreso lookup error:", congErr);
       }
 
-      // Step 2: Check if student has a pre-inscription/ticket for this technical visit
+      let finalCongData = congData;
+      if (!finalCongData) {
+        // Fallback search with string cleanedCode
+        const { data: congDataStr } = await supabase
+          .from('inscripciones_congreso')
+          .select('*')
+          .eq('id', cleanedCode)
+          .maybeSingle();
+        finalCongData = congDataStr;
+      }
+
+      if (!finalCongData) {
+        playBeep('error');
+        setScannedResult({
+          studentName: 'Código Desconocido / No Encontrado',
+          studentReg: cleanedCode,
+          status: 'error',
+          message: 'Error: El código escaneado no coincide con ningún registro (' + cleanedCode + ') en el congreso.'
+        });
+        setScanStatus('Estudiante no encontrado en congreso.');
+        resumeScannerAfterDelay();
+        return;
+      }
+
+      const studentRegistro = finalCongData.registro_universitario;
+      const studentNombre = finalCongData.nombre || finalCongData.nombre_completo || 'Estudiante';
+
+      if (!studentRegistro) {
+        playBeep('error');
+        setScannedResult({
+          studentName: studentNombre,
+          studentReg: cleanedCode,
+          status: 'error',
+          message: 'Error: El registro de congreso para este ticket no posee un número de Registro Universitario asociado.'
+        });
+        setScanStatus('Sin Registro Universitario.');
+        resumeScannerAfterDelay();
+        return;
+      }
+
+      // Step 2: Check in 'inscripciones' table (visitas técnicas registrations)
       const { data: inscData, error: inscErr } = await supabase
         .from('inscripciones')
         .select('*')
         .eq('visita_id', selectedVisitId)
         .eq('estudiante_registro', studentRegistro)
-        .eq('estado', 'INSCRITO')
         .maybeSingle();
 
-      if (inscErr) console.warn("Checking pre-registration returned info:", inscErr);
-      if (inscData) {
-        isPreRegistered = true;
+      if (inscErr) {
+        console.warn("Checking pre-registration returned info:", inscErr);
+      }
+
+      if (!inscData) {
+        playBeep('error');
+        setScannedResult({
+          studentName: studentNombre,
+          studentReg: studentRegistro,
+          status: 'error',
+          message: 'INGRESO DENEGADO: El estudiante no cuenta con una inscripción para esta visita técnica.'
+        });
+        setScanStatus('No inscrito en esta visita.');
+        resumeScannerAfterDelay();
+        return;
+      }
+
+      // Check if status is Strictly 'INSCRITO'
+      if (inscData.estado !== 'INSCRITO') {
+        playBeep('error');
+        setScannedResult({
+          studentName: studentNombre,
+          studentReg: studentRegistro,
+          status: 'error',
+          message: `INGRESO DENEGADO: El estado de la inscripción es "${inscData.estado || 'DESCONOCIDO'}" (Anulado).`
+        });
+        setScanStatus('Inscripción anulada o inactiva.');
+        resumeScannerAfterDelay();
+        return;
       }
 
       // Step 3: Check if already registered in attendance table to avoid duplicates
-      const isDuplicate = registros.some(r => r.ticket_id === studentRegistro);
+      const isDuplicate = registros.some(r => r.ticket_id === cleanedCode);
       if (isDuplicate) {
         playBeep('error');
         setScannedResult({
@@ -319,9 +362,8 @@ export default function AsistenciaVisitas({ visits: propVisits, onSupabaseError 
       // Step 4: Save attendance to supabase table 'asistencia_visitas'
       const payload = {
         visita_id: selectedVisitId,
-        ticket_id: studentRegistro,
-        nombre_estudiante: studentNombre,
-        fecha_ingreso: new Date().toISOString()
+        ticket_id: cleanedCode,
+        nombre_estudiante: studentNombre
       };
 
       const { error: insertErr } = await supabase
@@ -339,10 +381,8 @@ export default function AsistenciaVisitas({ visits: propVisits, onSupabaseError 
       setScannedResult({
         studentName: studentNombre,
         studentReg: studentRegistro,
-        status: isPreRegistered ? 'success' : 'warning',
-        message: isPreRegistered 
-          ? '¡Asistencia registrada con éxito! El estudiante está pre-inscrito.' 
-          : '¡Asistencia registrada! ATENCIÓN: El estudiante NO figuraba en la lista de pre-inscripción del sistema.'
+        status: 'success',
+        message: '¡Asistencia registrada con éxito! El estudiante está pre-inscrito y validado.'
       });
 
       setScanStatus('Asistencia guardada correctamente.');
@@ -390,46 +430,86 @@ export default function AsistenciaVisitas({ visits: propVisits, onSupabaseError 
 
     setIsManualSubmitting(true);
     try {
-      // Look up values
-      let studentRegistro = targetId;
-      let studentNombre = 'Estudiante Manual';
-      let isPreReg = false;
+      // Look up values using targetId. First try as an ID (matching QR logic)
+      let studentRegistro = '';
+      let studentNombre = '';
+      let ticketIdUsed = targetId;
 
-      const { data: congressoData } = await supabase
+      // 1. Try to find in congress by exact ID (matching QR logic)
+      const { data: congByExactId } = await supabase
         .from('inscripciones_congreso')
         .select('*')
-        .or(`registro_universitario.eq."${targetId}",id_ticket.eq."${targetId}",cedula_identidad.eq."${targetId}"`);
+        .eq('id', Number(targetId) || targetId)
+        .maybeSingle();
 
-      if (congressoData && congressoData.length > 0) {
-        const match = congressoData[0];
-        studentRegistro = match.registro_universitario || match.id_ticket || targetId;
+      let match = congByExactId;
+      if (!match) {
+        // Look up by registration number, ticket_id or ID card
+        const { data: congressoData } = await supabase
+          .from('inscripciones_congreso')
+          .select('*')
+          .or(`registro_universitario.eq."${targetId}",id_ticket.eq."${targetId}",cedula_identidad.eq."${targetId}",id.eq."${targetId}"`);
+        if (congressoData && congressoData.length > 0) {
+          match = congressoData[0];
+        }
+      }
+
+      if (match) {
+        studentRegistro = match.registro_universitario || '';
         studentNombre = match.nombre || match.nombre_completo || 'Estudiante';
+        ticketIdUsed = String(match.id);
       } else {
+        // Try fallback to students table
         const { data: localData } = await supabase
           .from('estudiantes')
           .select('*')
           .or(`registro.eq."${targetId}",ci.eq."${targetId}"`);
 
         if (localData && localData.length > 0) {
-          const match = localData[0];
-          studentRegistro = match.registro || targetId;
-          studentNombre = match.nombre || 'Estudiante';
+          const sMatch = localData[0];
+          studentRegistro = sMatch.registro || targetId;
+          studentNombre = sMatch.nombre || 'Estudiante';
+          ticketIdUsed = targetId;
+        } else {
+          studentRegistro = targetId;
+          studentNombre = 'Estudiante Manual';
+          ticketIdUsed = targetId;
         }
       }
 
-      // Check pre-registered
-      const { data: inscData } = await supabase
+      if (!studentRegistro) {
+        alert('No se pudo encontrar un registro universitario asociado al ID ingresado.');
+        setIsManualSubmitting(false);
+        return;
+      }
+
+      // Check if student has a pre-inscription/ticket for this technical visit
+      const { data: inscData, error: inscErr } = await supabase
         .from('inscripciones')
         .select('*')
         .eq('visita_id', selectedVisitId)
         .eq('estudiante_registro', studentRegistro)
-        .eq('estado', 'INSCRITO')
         .maybeSingle();
 
-      if (inscData) isPreReg = true;
+      if (inscErr) {
+        console.warn("Checking pre-registration returned info:", inscErr);
+      }
+
+      if (!inscData) {
+        alert(`INGRESO DENEGADO: El estudiante ${studentNombre} (${studentRegistro}) no cuenta con una inscripción para esta visita técnica.`);
+        setIsManualSubmitting(false);
+        return;
+      }
+
+      // Check if status is Strictly 'INSCRITO'
+      if (inscData.estado !== 'INSCRITO') {
+        alert(`INGRESO DENEGADO: El estado de la inscripción para ${studentNombre} es "${inscData.estado || 'DESCONOCIDO'}" (Anulado).`);
+        setIsManualSubmitting(false);
+        return;
+      }
 
       // Duplicate check
-      const isDuplicate = registros.some(r => r.ticket_id === studentRegistro);
+      const isDuplicate = registros.some(r => r.ticket_id === ticketIdUsed || r.ticket_id === studentRegistro);
       if (isDuplicate) {
         alert('Este estudiante ya cuenta con asistencia registrada para esta visita.');
         setIsManualSubmitting(false);
@@ -440,9 +520,8 @@ export default function AsistenciaVisitas({ visits: propVisits, onSupabaseError 
         .from('asistencia_visitas')
         .insert([{
           visita_id: selectedVisitId,
-          ticket_id: studentRegistro,
-          nombre_estudiante: studentNombre,
-          fecha_ingreso: new Date().toISOString()
+          ticket_id: ticketIdUsed,
+          nombre_estudiante: studentNombre
         }]);
 
       if (error) {
@@ -452,7 +531,7 @@ export default function AsistenciaVisitas({ visits: propVisits, onSupabaseError 
 
       // Success
       setManualReg('');
-      alert(`Asistencia registrada: ${studentNombre} (${studentRegistro})` + (isPreReg ? ' - Inscrito correctamente.' : ' - NO inscrito ⚠️'));
+      alert(`Asistencia registrada con éxito: ${studentNombre} (${studentRegistro})`);
       await fetchAsistenciaList(selectedVisitId);
     } catch (err: any) {
       alert('Error en registro manual de asistencia: ' + err.message);
