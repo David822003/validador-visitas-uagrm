@@ -1556,7 +1556,12 @@ export default function App() {
                     
                     <div className="flex items-center justify-between mt-auto pt-4 border-t border-emerald-500/10">
                       <div className="flex flex-col">
-                        <span className="text-xs font-black text-emerald-300">{new Date(visit.fecha).toLocaleDateString()}</span>
+                        <span className="text-xs font-black text-emerald-300">
+                          {(() => {
+                            const parts = (visit.fecha || '').split('-');
+                            return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : visit.fecha;
+                          })()}
+                        </span>
                         {visit.horario && <span className="text-[10px] font-black text-amber-400 uppercase tracking-tight">{visit.horario}</span>}
                       </div>
                       
@@ -1989,7 +1994,12 @@ export default function App() {
                             </td>
                             <td className="p-5 text-center">
                               <div className="flex flex-col items-center">
-                                <span className="text-sm font-extrabold text-slate-800">{new Date(v.fecha).toLocaleDateString()}</span>
+                                <span className="text-sm font-extrabold text-slate-800">
+                                  {(() => {
+                                    const parts = (v.fecha || '').split('-');
+                                    return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : v.fecha;
+                                  })()}
+                                </span>
                                 <span className="text-[10px] font-black text-amber-600 uppercase tracking-tight">{v.horario || 'N/D'}</span>
                               </div>
                             </td>
