@@ -3,7 +3,7 @@ import {
   Search, MapPin, Building2, CheckCircle2, XCircle, 
   GraduationCap, User, Upload, Database, Loader2, 
   Check, AlertCircle, RefreshCw, FileText, Layers,
-  LayoutGrid, LogOut, ClipboardList, ShieldCheck, Mail, Calendar, Users, Filter, Download, Trash2, Lock, ArrowLeft, Plus, IdCard, Phone, Eye, AlertTriangle, QrCode
+  LayoutGrid, LogOut, ClipboardList, ShieldCheck, Mail, Calendar, Users, Filter, Download, Trash2, Lock, ArrowLeft, Plus, IdCard, Phone, Eye, AlertTriangle, QrCode, Clock
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { DatabaseStudent, VISITS_REQUIREMENTS, TechnicalVisit, Registration } from './types';
@@ -13,6 +13,22 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import AsistenciaVisitas from './components/AsistenciaVisitas';
+
+// --- Helpers ---
+
+const getDayAndDateStr = (fechaStr: string) => {
+  if (!fechaStr) return '';
+  const parts = fechaStr.split('-');
+  if (parts.length !== 3) return fechaStr;
+  const year = parseInt(parts[0]);
+  const month = parseInt(parts[1]) - 1;
+  const day = parseInt(parts[2]);
+  const date = new Date(year, month, day);
+  const formatter = new Intl.DateTimeFormat('es-ES', { weekday: 'long' });
+  const dayName = formatter.format(date);
+  const capitalizedDay = dayName.charAt(0).toUpperCase() + dayName.slice(1);
+  return `${capitalizedDay}, ${parts[2]}/${parts[1]}/${parts[0]}`;
+};
 
 // --- Components ---
 
@@ -1522,76 +1538,119 @@ export default function App() {
               <Calendar className="text-amber-400" /> Próximas Visitas Técnicas
             </h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="flex flex-col gap-4">
               {availableVisits.map((visit, index) => {
                 const isEligible = currentStudent?.isExternal ? true : (studentLvl >= visit.min_nivel);
                 const isRegistered = myRegistrations.includes(visit.id);
+                const isCanceled = canceledRegistrations.includes(visit.id);
                 
+                const totalInscritos = allRegistrations.filter(r => r.visita_id === visit.id && r.estado !== 'ANULADO').length;
+                const remainingCupos = Math.max(0, visit.cupos_max - totalInscritos);
+
                 return (
-                  <div key={visit.id || `visit-card-${index}`} className={`group p-6 rounded-[2rem] border-2 transition-all relative overflow-hidden flex flex-col justify-between ${isRegistered ? 'bg-emerald-950/40 border-emerald-400/50 shadow-lg shadow-emerald-950/30' : isEligible ? 'bg-slate-950/40 hover:bg-slate-950/50 backdrop-blur-md border-emerald-500/15 hover:border-amber-500/30' : 'bg-slate-950/20 border-emerald-900/10 opacity-70'}`}>
-                    {!isEligible && !isRegistered && (
-                      <div className="absolute inset-0 bg-slate-950/45 backdrop-blur-[1.5px] flex items-center justify-center z-25">
-                        <div className="bg-[#011a16]/95 p-4 rounded-3xl shadow-2xl border border-rose-500/25 flex flex-col items-center gap-2 scale-90 md:scale-100">
-                          <div className="p-3 bg-rose-950 text-rose-400 rounded-2xl border border-rose-500/20">
-                            <Lock size={22}/>
-                          </div>
-                          <span className="text-[9px] font-black text-rose-300 uppercase tracking-widest text-center leading-normal">Semestre Insuficiente<br/>(Requerido: Nivel {visit.min_nivel})</span>
-                        </div>
+                  <div 
+                    key={visit.id || `visit-row-${index}`} 
+                    className={`group flex flex-col lg:flex-row lg:items-center justify-between gap-5 p-5 md:p-6 rounded-2xl border transition-all ${
+                      isRegistered 
+                        ? 'bg-emerald-950/20 border-emerald-500/35 shadow-md shadow-emerald-950/10' 
+                        : isEligible 
+                          ? 'bg-[#021f1b]/45 hover:bg-[#022822]/65 border-emerald-500/10 hover:border-emerald-500/25' 
+                          : 'bg-slate-950/20 border-emerald-950/20 opacity-60'
+                    }`}
+                  >
+                    {/* Date & Time Block */}
+                    <div className="flex flex-col min-w-[200px]">
+                      <div className="flex items-center gap-1.5">
+                        {isRegistered && <CheckCircle2 size={14} className="text-emerald-400 shrink-0" />}
+                        <p className="text-xs font-black text-amber-400 uppercase tracking-widest leading-none">
+                          {getDayAndDateStr(visit.fecha)}
+                        </p>
                       </div>
-                    )}
-
-                    <div>
-                      <div className="flex justify-between items-start mb-6">
-                        <div className={`p-3 rounded-2xl ${isRegistered ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-400/20' : 'bg-emerald-500/10 text-emerald-300'}`}>
-                          {isRegistered ? <CheckCircle2 size={24}/> : <Calendar size={24}/>}
-                        </div>
-                        <span className={`text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest ${isEligible ? 'bg-emerald-900/40 text-amber-400 border border-amber-500/15' : 'bg-rose-950 text-rose-300 border border-rose-500/15'}`}>
-                          Min Lvl {visit.min_nivel}
-                        </span>
-                      </div>
-
-                      <h4 className="font-extrabold text-white mb-2 leading-snug text-base">{visit.nombre}</h4>
-                      <p className="text-emerald-200/50 text-xs mb-6 line-clamp-2">{visit.descripcion}</p>
+                      <p className="text-xs text-emerald-300/80 font-bold mt-1.5 flex items-center gap-1.5 pl-0.5">
+                        <Clock size={12} className="text-emerald-500/70 shrink-0" /> 
+                        {visit.horario || 'Sin Horario'}
+                      </p>
                     </div>
-                    
-                    <div className="flex items-center justify-between mt-auto pt-4 border-t border-emerald-500/10">
+
+                    {/* Company / Place Details */}
+                    <div className="flex-1 flex flex-col justify-center">
+                      <h4 className="font-extrabold text-white text-base leading-snug group-hover:text-amber-300/90 transition-colors">
+                        {visit.nombre}
+                      </h4>
+                      <p className="text-xs text-slate-400 font-medium mt-1 line-clamp-2 max-w-2xl leading-relaxed">
+                        {visit.descripcion}
+                      </p>
+                    </div>
+
+                    {/* Meta Indicators: Cupos & Requirements */}
+                    <div className="flex items-center gap-5 sm:gap-8 min-w-[250px] py-1 border-y border-emerald-500/5 lg:border-none lg:py-0">
+                      {/* Cupos */}
                       <div className="flex flex-col">
-                        <span className="text-xs font-black text-emerald-300">
-                          {(() => {
-                            const parts = (visit.fecha || '').split('-');
-                            return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : visit.fecha;
-                          })()}
+                        <span className="text-xs font-black text-emerald-300 flex items-center gap-1">
+                          <Users size={12} className="text-emerald-400 shrink-0" />
+                          {remainingCupos} / {visit.cupos_max} cupos
                         </span>
-                        {visit.horario && <span className="text-[10px] font-black text-amber-400 uppercase tracking-tight">{visit.horario}</span>}
+                        <span className="text-[10px] text-slate-500 font-bold uppercase mt-0.5 tracking-wider leading-none">
+                          disponibles
+                        </span>
                       </div>
-                      
+
+                      {/* Level */}
+                      <div className="flex flex-col">
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest text-center border mt-0.5 self-start ${
+                          isEligible 
+                            ? 'bg-emerald-950/40 text-emerald-300 border-emerald-500/20' 
+                            : 'bg-rose-950/30 text-rose-300 border-rose-500/15'
+                        }`}>
+                          MIN LVL {visit.min_nivel}
+                        </span>
+                        <span className="text-[10px] text-slate-500 font-bold uppercase mt-0.5 tracking-wider leading-none">
+                          Restricción
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Actions / Status */}
+                    <div className="flex items-center justify-start lg:justify-end min-w-[180px] pt-2 lg:pt-0 border-t lg:border-t-0 border-emerald-500/5 lg:border-none">
                       {isRegistered ? (
-                        <div className="flex flex-col items-end gap-1.5">
-                          <div className="flex items-center gap-1 text-emerald-400 font-black text-xs">
-                            <Check size={14}/> INSCRITO
-                          </div>
+                        <div className="flex items-center lg:flex-col lg:items-end gap-3 lg:gap-1.5 w-full lg:w-auto justify-between lg:justify-center">
+                          <span className="flex items-center gap-1 text-emerald-400 font-black text-xs uppercase tracking-wider bg-emerald-950/60 border border-emerald-500/20 px-3 py-1 rounded-lg">
+                            <Check size={14} /> Inscrito
+                          </span>
                           <button
                             onClick={() => {
                               setShowCancelModal(visit.id);
                               setCancelReason('');
                               setRegError('');
                             }}
-                            className="px-3 py-1.5 bg-rose-950/40 hover:bg-rose-950/60 text-rose-300 border border-rose-500/25 font-extrabold rounded-xl text-[10px] uppercase tracking-wider transition-colors shadow-sm"
+                            className="px-3 py-1.5 bg-rose-950/40 hover:bg-rose-950/60 text-rose-300 border border-rose-500/25 font-extrabold rounded-lg text-[10px] uppercase tracking-wider transition-colors shadow-sm"
                           >
                             Anular Inscripción
                           </button>
                         </div>
-                      ) : canceledRegistrations.includes(visit.id) ? (
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-950 text-rose-300 border border-rose-500/20 rounded-xl font-black text-[10px] uppercase tracking-wider">
-                          <XCircle size={12}/> Inscripción Anulada
+                      ) : isCanceled ? (
+                        <span className="flex items-center gap-1 px-3 py-1.5 bg-rose-950 text-rose-300 border border-rose-500/20 rounded-lg font-black text-[10px] uppercase tracking-wider">
+                          <XCircle size={12} /> Inscripción Anulada
+                        </span>
+                      ) : !isEligible ? (
+                        <div className="flex items-center gap-1.5 text-rose-300/80 font-bold text-xs uppercase tracking-wider py-1 pl-1">
+                          <Lock size={12} className="text-rose-400 shrink-0 animate-pulse" />
+                          <span className="text-[10px] leading-tight text-rose-350 bg-rose-950/20 px-2 py-1 rounded">Semestre insuficiente (Requerido: Nivel {visit.min_nivel})</span>
                         </div>
                       ) : (
                         <button 
-                          disabled={!isEligible || isBooking === visit.id}
+                          disabled={isBooking === visit.id}
                           onClick={() => handleRegisterForVisit(visit.id)}
-                          className={`px-4 py-2 rounded-xl text-xs font-black transition-all ${isEligible ? 'bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white shadow-lg shadow-emerald-950/50' : 'bg-slate-800 text-slate-500 cursor-not-allowed'}`}
+                          className="w-full lg:w-auto px-4 py-2.5 rounded-xl text-xs font-black bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white shadow-lg shadow-emerald-950/55 transition-all uppercase tracking-wider transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-1.5"
                         >
-                          "Iniciar Inscripción"
+                          {isBooking === visit.id ? (
+                            <>
+                              <Loader2 size={12} className="animate-spin" />
+                              Ingresando...
+                            </>
+                          ) : (
+                            'Iniciar Inscripción'
+                          )}
                         </button>
                       )}
                     </div>
