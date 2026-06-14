@@ -302,8 +302,10 @@ export default function App() {
     fetchVisits();
     if (userRole === 'admin') {
       fetchAllRegistrations();
+    } else if (userRole === 'student' && currentStudent) {
+      fetchStudentRegistrations(currentStudent.registro);
     }
-  }, [userRole]);
+  }, [userRole, currentStudent]);
 
   const fetchVisits = async () => {
     try {
@@ -325,6 +327,22 @@ export default function App() {
     } catch (err) {
       console.error("Error fetching visits:", err);
       // No fallback with numeric IDs to avoid UUID cast errors
+    }
+  };
+
+  const fetchStudentRegistrations = async (studentReg: string) => {
+    try {
+      const { data: regs, error } = await supabase
+        .from('inscripciones')
+        .select('visita_id, estado')
+        .eq('estudiante_registro', studentReg);
+      if (error) throw error;
+      if (regs) {
+        setMyRegistrations(regs.filter((r: any) => r.estado !== 'ANULADO').map((r: any) => r.visita_id));
+        setCanceledRegistrations(regs.filter((r: any) => r.estado === 'ANULADO').map((r: any) => r.visita_id));
+      }
+    } catch (err) {
+      console.error("Error fetching student registrations:", err);
     }
   };
 
@@ -586,10 +604,10 @@ export default function App() {
           throw error;
         }
       } else {
-        setMyRegistrations(prev => [...prev, visitId]);
+        await fetchStudentRegistrations(registroId);
+        await fetchVisits();
         setShowRegModal(null);
         alert('¡Inscripción completada con éxito!');
-        window.location.reload();
       }
     } catch (err: any) {
       console.error(err);
@@ -1909,9 +1927,16 @@ export default function App() {
                             <button 
                               onClick={submitRegistration}
                               disabled={isBooking !== null || !regForm.contacto_referencia.trim()}
-                              className="h-16 px-12 bg-gradient-to-r from-emerald-600 to-emerald-750 text-white rounded-2xl font-black text-lg hover:scale-105 transition-all shadow-md flex items-center justify-center disabled:opacity-40"
+                              className="h-16 px-12 bg-gradient-to-r from-emerald-600 to-emerald-750 text-white rounded-2xl font-black text-lg hover:scale-105 transition-all shadow-md flex items-center justify-center gap-3 disabled:opacity-40"
                             >
-                              CONFIRMAR ASISTENCIA
+                              {isBooking !== null ? (
+                                <>
+                                  <Loader2 className="animate-spin text-white" size={24} />
+                                  PROCESANDO...
+                                </>
+                              ) : (
+                                "CONFIRMAR ASISTENCIA"
+                              )}
                             </button>
                           </div>
                           {regError && <p className="mt-4 text-center text-xs font-black text-rose-600 uppercase tracking-widest animate-pulse">{regError}</p>}
