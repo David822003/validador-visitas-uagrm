@@ -40,6 +40,7 @@ export interface TechnicalVisit {
   horario?: string;
   cupos_max: number;
   min_nivel: number;
+  requiereSeguro?: boolean;
 }
 
 export interface Registration {

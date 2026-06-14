@@ -145,8 +145,16 @@ export default function AsistenciaVisitas({ visits: propVisits, onSupabaseError 
       }
       
       if (data && data.length > 0) {
-        setVisits(data);
-        setSelectedVisitId(data[0].id);
+        const parsed = data.map((v: any) => {
+          const descParts = (v.descripcion || '').split(' ||| ');
+          return {
+            ...v,
+            descripcion: descParts[0],
+            requiereSeguro: descParts[1] ? descParts[1] === 'requiereSeguro:true' : true
+          };
+        });
+        setVisits(parsed);
+        setSelectedVisitId(parsed[0].id);
       }
     } catch (err) {
       console.error("Error fetching technical visits:", err);

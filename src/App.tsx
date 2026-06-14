@@ -236,7 +236,8 @@ export default function App() {
     horario_inicio: '',
     horario_fin: '',
     cupos_max: 30,
-    min_nivel: 1
+    min_nivel: 1,
+    requiereSeguro: true
   });
   const [isSavingVisit, setIsSavingVisit] = useState(false);
   
@@ -262,6 +263,9 @@ export default function App() {
   });
   const [comprobanteFile, setComprobanteFile] = useState<File | null>(null);
   const [regError, setRegError] = useState('');
+  
+  const activeRegVisit = showRegModal ? availableVisits.find(v => v.id === showRegModal) : null;
+  const activeRegVisitRequiresInsurance = activeRegVisit ? activeRegVisit.requiereSeguro !== false : true;
 
   // Existing Logic States (Used in Admin Sync)
   const [baseStudents, setBaseStudents] = useState<DatabaseStudent[]>([]);
@@ -305,7 +309,19 @@ export default function App() {
     try {
       const { data, error } = await supabase.from('visitas').select('*');
       if (error) throw error;
-      if (data) setAvailableVisits(data);
+      if (data) {
+        const parsed = data.map((v: any) => {
+          const descParts = (v.descripcion || '').split(' ||| ');
+          const actualDesc = descParts[0];
+          const requiereSeguro = descParts[1] ? descParts[1] === 'requiereSeguro:true' : true;
+          return {
+            ...v,
+            descripcion: actualDesc,
+            requiereSeguro: requiereSeguro
+          };
+        });
+        setAvailableVisits(parsed);
+      }
     } catch (err) {
       console.error("Error fetching visits:", err);
       // No fallback with numeric IDs to avoid UUID cast errors
@@ -475,9 +491,11 @@ export default function App() {
 
   const handleRegisterForVisit = (visitId: string) => {
     if (!currentStudent) return;
+    const selectedVisitObj = availableVisits.find(v => v.id === visitId);
+    const requiresInsurance = selectedVisitObj ? selectedVisitObj.requiereSeguro !== false : true;
     setShowRegModal(visitId);
     setRegForm({
-      tiene_seguro: false,
+      tiene_seguro: requiresInsurance,
       tiene_epp: false,
       problema_salud: '',
       contacto_referencia: '',
@@ -491,13 +509,20 @@ export default function App() {
     if (!currentStudent || !showRegModal) return;
     
     // Validation
-    if (!regForm.tiene_seguro) {
-      setRegError('El seguro Uni Vida es obligatorio para asistir.');
-      return;
-    }
-    if (!comprobanteFile && regForm.tiene_seguro) {
-      setRegError('Debe adjuntar el comprobante del seguro.');
-      return;
+    if (activeRegVisitRequiresInsurance) {
+      if (!regForm.tiene_seguro) {
+        setRegError('El seguro Uni Vida es obligatorio para esta visita.');
+        return;
+      }
+      if (!comprobanteFile) {
+        setRegError('Debe adjuntar el comprobante del seguro.');
+        return;
+      }
+    } else {
+      if (regForm.tiene_seguro && !comprobanteFile) {
+        setRegError('Debe adjuntar el comprobante del seguro o marcar que no tiene seguro.');
+        return;
+      }
     }
     if (!regForm.contacto_referencia.trim()) {
       setRegError('El contacto de referencia es obligatorio.');
@@ -672,7 +697,8 @@ export default function App() {
       horario_inicio: '',
       horario_fin: '',
       cupos_max: 30,
-      min_nivel: 1
+      min_nivel: 1,
+      requiereSeguro: true
     });
     setEditingVisit(null);
     setShowVisitModal(false);
@@ -691,7 +717,8 @@ export default function App() {
           horario_inicio: '',
           horario_fin: '',
           cupos_max: 30,
-          min_nivel: 1
+          min_nivel: 1,
+          requiereSeguro: true
         });
         setEditingVisit(null);
       }
@@ -704,13 +731,25 @@ export default function App() {
     try {
       // Combined horario for database
       const finalHorario = `${visitForm.horario_inicio} - ${visitForm.horario_fin}`;
+      
+      // Combined description to include requiereSeguro
+      const finalDescripcion = `${visitForm.descripcion} ||| requiereSeguro:${visitForm.requiereSeguro}`;
       const payload = {
         nombre: visitForm.nombre,
-        descripcion: visitForm.descripcion,
+        descripcion: finalDescripcion,
         fecha: visitForm.fecha,
         horario: finalHorario,
         cupos_max: visitForm.cupos_max,
         min_nivel: visitForm.min_nivel
+      };
+
+      const parseRow = (rowItem: any) => {
+        const descParts = (rowItem.descripcion || '').split(' ||| ');
+        return {
+          ...rowItem,
+          descripcion: descParts[0],
+          requiereSeguro: descParts[1] ? descParts[1] === 'requiereSeguro:true' : true
+        };
       };
 
       if (editingVisit) {
@@ -723,15 +762,15 @@ export default function App() {
         if (error) {
           if (handleSupabaseError(error)) return;
           throw error;
-        }
+         }
 
         if (!isMounted.current) return;
 
         // Update local state immediately for instant UI response
         if (data && data.length > 0) {
-          setAvailableVisits(prev => prev.map(v => v.id === editingVisit.id ? data[0] : v));
+          setAvailableVisits(prev => prev.map(v => v.id === editingVisit.id ? parseRow(data[0]) : v));
         } else {
-          setAvailableVisits(prev => prev.map(v => v.id === editingVisit.id ? { ...v, ...payload } as any : v));
+          setAvailableVisits(prev => prev.map(v => v.id === editingVisit.id ? { ...v, ...payload, requiereSeguro: visitForm.requiereSeguro, descripcion: visitForm.descripcion } as any : v));
         }
       } else {
         const { data, error } = await supabase
@@ -748,7 +787,7 @@ export default function App() {
 
         // Insert in local state immediately
         if (data && data.length > 0) {
-          setAvailableVisits(prev => [...prev, data[0]]);
+          setAvailableVisits(prev => [...prev, parseRow(data[0])]);
         }
       }
 
@@ -1739,7 +1778,11 @@ export default function App() {
                         >
                           <div>
                             <h3 className="text-4xl font-black text-[#111827] mb-4 tracking-tighter">Seguridad Industrial</h3>
-                            <p className="text-slate-600 text-sm mb-10 font-bold max-w-md">Para el ingreso a planta, el seguro de accidentes y el equipamiento de protección son requisitos institucionales obligatorios.</p>
+                            <p className="text-slate-600 text-sm mb-10 font-bold max-w-md">
+                              {activeRegVisitRequiresInsurance 
+                                ? "Para el ingreso a planta, el seguro de accidentes y el equipamiento de protección son requisitos institucionales obligatorios."
+                                : "Para esta visita técnica el seguro de accidentes Uni Vida es opcional, pero el equipamiento de protección sigue siendo requerido."}
+                            </p>
 
                             <div className="space-y-12">
                               {/* Seguro Section */}
@@ -1777,10 +1820,15 @@ export default function App() {
                                         </div>
                                       </div>
                                     </motion.div>
-                                  ) : (
+                                  ) : activeRegVisitRequiresInsurance ? (
                                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 bg-red-50 border border-red-200 rounded-2xl flex items-center gap-4 mt-4">
                                       <AlertCircle className="text-red-700 shrink-0 shadow-sm" />
                                       <p className="text-red-800 text-xs font-extrabold uppercase tracking-widest leading-loose">EL SEGURO ES REQUISITO OBLIGATORIO PARA VALIDAR SU PARTICIPACIÓN.</p>
+                                    </motion.div>
+                                  ) : (
+                                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-center gap-4 mt-4">
+                                      <CheckCircle2 className="text-emerald-700 shrink-0 shadow-sm" />
+                                      <p className="text-emerald-800 text-xs font-extrabold uppercase tracking-widest leading-loose">EL SEGURO ES OPCIONAL PARA ESTA VISITA. PUEDE CONTINUAR SIN ADJUNTARLO.</p>
                                     </motion.div>
                                   )}
                                 </AnimatePresence>
@@ -1808,7 +1856,7 @@ export default function App() {
                           <div className="mt-8 flex justify-end pt-8 border-t border-slate-200">
                             <button 
                               onClick={() => setRegStep(2)}
-                              disabled={!regForm.tiene_seguro || !comprobanteFile}
+                              disabled={activeRegVisitRequiresInsurance ? (!regForm.tiene_seguro || !comprobanteFile) : (regForm.tiene_seguro && !comprobanteFile)}
                               className="h-16 px-12 bg-gradient-to-r from-emerald-600 to-emerald-750 text-white rounded-[2rem] font-black text-sm hover:scale-105 transition-all shadow-md disabled:opacity-30 disabled:grayscale flex items-center gap-3"
                             >Siguiente Paso <CheckCircle2 size={20}/></button>
                           </div>
@@ -2099,7 +2147,8 @@ export default function App() {
                                       horario_inicio: times[0] || '',
                                       horario_fin: times[1] || '',
                                       cupos_max: v.cupos_max,
-                                      min_nivel: v.min_nivel
+                                      min_nivel: v.min_nivel,
+                                      requiereSeguro: v.requiereSeguro !== false
                                     });
                                     setShowVisitModal(true);
                                   }}
@@ -2236,6 +2285,21 @@ export default function App() {
                                 required
                                 className="w-full h-28 p-6 bg-[#011411]/60 border-2 border-emerald-500/15 focus:border-amber-400 focus:bg-transparent text-white rounded-2xl outline-none transition-all font-medium resize-none shadow-inner placeholder:text-emerald-800 animate-none"
                               />
+                            </div>
+                            <div className="md:col-span-2 flex items-center justify-between p-4 bg-[#011411]/40 border-2 border-emerald-500/10 rounded-2xl">
+                              <div>
+                                <label className="text-xs font-black uppercase text-emerald-300 tracking-widest block">Requerir Seguro UniVida para esta visita</label>
+                                <p className="text-[11px] text-emerald-600 font-bold mt-0.5">Define si los estudiantes deben subir obligatoriamente su comprobante de seguro para inscribirse</p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => setVisitForm({ ...visitForm, requiereSeguro: !visitForm.requiereSeguro })}
+                                className={`w-14 h-8 rounded-full p-1 transition-colors duration-200 outline-none shrink-0 cursor-pointer ${visitForm.requiereSeguro ? 'bg-emerald-500' : 'bg-emerald-950 border border-emerald-500/20'}`}
+                              >
+                                <div
+                                  className={`w-6 h-6 rounded-full bg-white transition-transform duration-200 shadow-md ${visitForm.requiereSeguro ? 'translate-x-6' : 'translate-x-0'}`}
+                                />
+                              </button>
                             </div>
                           </div>
                           <div className="flex justify-end gap-3 pt-4">
