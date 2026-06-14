@@ -428,10 +428,13 @@ export default function App() {
       }
 
       // Paso 1 (Buscar Usuario): Buscar coincidencia en número de registro o número de ticket en la tabla inscripciones_congreso
+      const cleanInput = input.trim();
+      const enteredPassword = loginPass.trim();
+
       const { data, error } = await supabase
         .from('inscripciones_congreso')
         .select('*')
-        .or(`registro_universitario.eq."${input}",id_ticket.eq."${input}"`);
+        .or(`registro_universitario.eq.${cleanInput},id_ticket.eq.${cleanInput},registro_universitario.ilike.%${cleanInput}%,id_ticket.ilike.%${cleanInput}%`);
 
       if (error) {
         console.error("Supabase query error:", error);
@@ -444,26 +447,37 @@ export default function App() {
         return;
       }
 
-      const match = data[0];
-      const enteredPassword = loginPass.trim();
-      const dbPassword = (match.cedula_identidad || '').trim();
+      // Find the best match in-memory to safely bypass trailing/leading spaces or cases in identification and password
+      const match = data.find(row => {
+        const isIdMatched = (row.registro_universitario || '').trim().toLowerCase() === cleanInput.toLowerCase() || 
+                            (row.id_ticket || '').trim().toLowerCase() === cleanInput.toLowerCase();
+        const isPassMatched = (row.cedula_identidad || '').trim() === enteredPassword;
+        return isIdMatched && isPassMatched;
+      });
 
-      // Paso 2 (Validar Contraseña): Verificar que la Contraseña sea exactamente igual a la cedula_identidad de la fila
-      if (enteredPassword !== dbPassword) {
+      if (!match) {
         setLoginError('No se encuentra inscrito en el congreso. Por favor, asegúrese de completar su inscripción general primero.');
         setIsLoggingIn(false);
         return;
       }
 
+      const trimmed_registro = (match.registro_universitario || '').trim();
+      const trimmed_ticket = (match.id_ticket || '').trim();
+      const final_registro = trimmed_registro || trimmed_ticket || cleanInput;
+
       let fetchedNiv: number | undefined = undefined;
       let isExternal = true;
 
-      const identifierForLocal = match.registro_universitario || input;
-      if (identifierForLocal) {
+      // Detect if user has a UAGRM/internal registration type
+      if (match.tipo_inscripcion && match.tipo_inscripcion.toLowerCase().includes('uagrm')) {
+        isExternal = false;
+      }
+
+      if (final_registro) {
         const { data: localStudentData, error: localErr } = await supabase
           .from('estudiantes')
           .select('niv')
-          .eq('registro', identifierForLocal)
+          .eq('registro', final_registro)
           .maybeSingle();
         
         if (!localErr && localStudentData) {
@@ -474,12 +488,12 @@ export default function App() {
 
       // Map to standard DatabaseStudent model
       const studentData: DatabaseStudent = {
-        registro: match.registro_universitario || match.id_ticket || '',
+        registro: final_registro,
         nombre: match.nombre || match.nombre_completo || 'Asistente',
         carrera: match.carrera || 'Ingeniería Civil',
-        semestre_activo: match.semestre_activo || '1-2025',
-        ci: match.cedula_identidad || '',
-        obs: match.id_ticket || '',
+        semestre_activo: match.semestre || match.semestre_activo || '1-2025',
+        ci: (match.cedula_identidad || '').trim(),
+        obs: trimmed_ticket || '',
         lugar: match.lugar || '',
         nivel: match.nivel || match.nivel_semestre || match.niv || 1,
         niv: fetchedNiv,
