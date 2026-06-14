@@ -1339,7 +1339,7 @@ export default function App() {
 
   if (userRole === 'guest') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-950 via-emerald-900 to-teal-950 flex flex-col items-center justify-center p-6 text-white font-sans overflow-hidden relative">
+      <div className="min-h-screen bg-[#F8F9FA] flex flex-col items-center justify-center p-6 text-[#111827] font-sans overflow-hidden relative">
         <CEICBackground />
         
         <AnimatePresence mode="wait">
@@ -1352,42 +1352,42 @@ export default function App() {
               className="max-w-2xl w-full grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10"
             >
               <div className="md:col-span-2 flex flex-col items-center mb-6">
-                <div className="p-4 bg-gradient-to-br from-amber-400 to-amber-600 rounded-3xl shadow-xl shadow-amber-900/30 mb-6 border border-amber-300/30">
-                  <Building2 className="w-12 h-12 text-[#021c17]" />
+                <div className="p-4 bg-emerald-50 rounded-3xl shadow-sm mb-6 border border-emerald-100">
+                  <Building2 className="w-12 h-12 text-emerald-700" />
                 </div>
-                <h1 className="text-4xl font-black text-center tracking-tight mb-2 uppercase text-white">UAGRM - Carrera de Ingeniería Civil</h1>
-                <p className="text-emerald-300 font-extrabold text-center tracking-wide uppercase text-sm">CONGRESO DE ESTUDIANTES - GESTIÓN DE VISITAS TÉCNICAS</p>
+                <h1 className="text-4xl font-black text-center tracking-tight mb-2 uppercase text-[#111827]">UAGRM - Carrera de Ingeniería Civil</h1>
+                <p className="text-emerald-700 font-extrabold text-center tracking-wide uppercase text-sm">CONGRESO DE ESTUDIANTES - GESTIÓN DE VISITAS TÉCNICAS</p>
               </div>
 
               <motion.button 
-                initial={{ borderColor: 'rgba(16, 185, 129, 0.2)' }}
-                whileHover={{ scale: 1.05, borderColor: 'rgba(245, 158, 11, 0.4)' }}
+                initial={{ borderColor: 'rgba(226, 232, 240, 1)' }}
+                whileHover={{ scale: 1.05, borderColor: 'rgba(16, 185, 129, 0.4)' }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setLoginMode('student')}
-                className="bg-slate-900/40 backdrop-blur-md border p-10 rounded-[2.5rem] flex flex-col items-center gap-6 hover:bg-slate-900/60 transition-all group shadow-2xl"
+                className="bg-white border p-10 rounded-[2.5rem] flex flex-col items-center gap-6 hover:bg-slate-50 transition-all group shadow-sm"
               >
-                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center shadow-2xl group-hover:from-emerald-400 group-hover:to-teal-600 transition-colors border border-emerald-400/20">
-                  <GraduationCap className="w-12 h-12 text-white" />
+                <div className="w-24 h-24 rounded-full bg-emerald-50 flex items-center justify-center shadow-inner group-hover:bg-emerald-100 transition-colors border border-emerald-100">
+                  <GraduationCap className="w-12 h-12 text-emerald-700" />
                 </div>
                 <div className="text-center">
-                  <h2 className="text-2xl font-black mb-2 text-white group-hover:text-amber-400 transition-colors">Estudiantes</h2>
-                  <p className="text-emerald-200/70 text-sm font-medium">Inscripción y gestión de visitas</p>
+                  <h2 className="text-2xl font-black mb-2 text-[#111827] group-hover:text-emerald-700 transition-colors">Estudiantes</h2>
+                  <p className="text-[#6B7280] text-sm font-medium">Inscripción y gestión de visitas</p>
                 </div>
               </motion.button>
 
               <motion.button 
-                initial={{ borderColor: 'rgba(16, 185, 129, 0.2)' }}
-                whileHover={{ scale: 1.05, borderColor: 'rgba(245, 158, 11, 0.4)' }}
+                initial={{ borderColor: 'rgba(226, 232, 240, 1)' }}
+                whileHover={{ scale: 1.05, borderColor: 'rgba(16, 185, 129, 0.4)' }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setLoginMode('admin')}
-                className="bg-slate-900/40 backdrop-blur-md border p-10 rounded-[2.5rem] flex flex-col items-center gap-6 hover:bg-slate-900/60 transition-all group shadow-2xl"
+                className="bg-white border p-10 rounded-[2.5rem] flex flex-col items-center gap-6 hover:bg-slate-50 transition-all group shadow-sm"
               >
-                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-2xl group-hover:from-amber-300 group-hover:to-amber-500 transition-colors border border-amber-300/20">
-                  <ShieldCheck className="w-12 h-12 text-teal-950" />
+                <div className="w-24 h-24 rounded-full bg-amber-50 flex items-center justify-center shadow-inner group-hover:bg-amber-100 transition-colors border border-amber-100">
+                  <ShieldCheck className="w-12 h-12 text-amber-600" />
                 </div>
                 <div className="text-center">
-                  <h2 className="text-2xl font-black mb-2 text-white group-hover:text-amber-400 transition-colors">Administración</h2>
-                  <p className="text-emerald-200/70 text-sm font-medium">Panel de control y reportes</p>
+                  <h2 className="text-2xl font-black mb-2 text-[#111827] group-hover:text-amber-650 transition-colors">Administración</h2>
+                  <p className="text-[#6B7280] text-sm font-medium">Panel de control y reportes</p>
                 </div>
               </motion.button>
             </motion.div>
@@ -1397,54 +1397,54 @@ export default function App() {
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -50 }}
-              className="max-w-md w-full bg-[#03241f]/75 backdrop-blur-xl text-white p-10 rounded-[2.5rem] shadow-2xl border border-emerald-500/20 relative z-10"
+              className="max-w-md w-full bg-white text-[#111827] p-10 rounded-[2.5rem] shadow-xl border border-slate-200 relative z-10"
             >
               <button 
                 onClick={() => { setLoginMode('select'); setLoginError(''); }}
-                className="absolute top-8 left-8 text-emerald-300 hover:text-amber-400 transition-colors"
+                className="absolute top-8 left-8 text-slate-400 hover:text-emerald-700 transition-colors"
                 title="Volver"
               >
                 <ArrowLeft size={24} />
               </button>
 
               <div className="flex flex-col items-center mb-8 pt-4">
-                <div className="p-4 bg-gradient-to-br from-emerald-500 to-teal-800 rounded-2xl shadow-lg border border-emerald-400/20 mb-4 text-white">
+                <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100 mb-4 text-emerald-600">
                   {loginMode === 'student' ? <GraduationCap size={32}/> : <ShieldCheck size={32}/>}
                 </div>
-                <h2 className="text-2xl font-black text-white">Acceso {loginMode === 'student' ? 'Estudiante' : 'Administrador'}</h2>
-                <p className="text-emerald-200/60 text-sm font-medium">Ingrese sus credenciales para continuar</p>
+                <h2 className="text-2xl font-black text-[#111827]">Acceso {loginMode === 'student' ? 'Estudiante' : 'Administrador'}</h2>
+                <p className="text-[#6B7280] text-sm font-medium">Ingrese sus credenciales para continuar</p>
               </div>
 
               <form onSubmit={handleLogin} className="space-y-6">
                 {loginMode === 'admin' && (
                   <>
                     <div>
-                      <label className="text-[10px] font-black uppercase text-emerald-300 tracking-widest pl-2 mb-2 block font-black">Usuario Administrador</label>
+                      <label className="text-[10px] font-black uppercase text-emerald-700 tracking-widest pl-2 mb-2 block font-black">Usuario Administrador</label>
                       <div className="relative">
-                        <User className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-400/60 w-5 h-5" />
+                        <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
                         <input 
                           type="text" 
                           value={adminUser}
                           onChange={(e) => setAdminUser(e.target.value)}
                           placeholder="Ej: admin"
-                          className="w-full h-14 bg-[#011412]/60 border-2 border-emerald-500/15 focus:border-amber-400 focus:ring-4 focus:ring-amber-500/10 text-white placeholder:text-emerald-800 rounded-2xl pl-12 outline-none transition-all font-bold shadow-inner"
+                          className="w-full h-14 bg-slate-50 border-2 border-slate-200 focus:border-emerald-600 focus:bg-white text-[#111827] placeholder:text-slate-400 rounded-2xl pl-12 outline-none transition-all font-bold shadow-sm"
                           required
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="text-[10px] font-black uppercase text-emerald-300 tracking-widest pl-2 mb-2 block font-black">
+                      <label className="text-[10px] font-black uppercase text-emerald-700 tracking-widest pl-2 mb-2 block font-black">
                         Contraseña
                       </label>
                       <div className="relative">
-                        <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-400/60 w-5 h-5" />
+                        <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
                         <input 
                           type="password" 
                           value={loginPass}
                           onChange={(e) => setLoginPass(e.target.value)}
                           placeholder="Contraseña de acceso"
-                          className="w-full h-14 bg-[#011412]/60 border-2 border-emerald-500/15 focus:border-amber-400 focus:ring-4 focus:ring-amber-500/10 text-white placeholder:text-emerald-800 rounded-2xl pl-12 outline-none transition-all font-bold shadow-inner"
+                          className="w-full h-14 bg-slate-50 border-2 border-slate-200 focus:border-emerald-600 focus:bg-white text-[#111827] placeholder:text-slate-400 rounded-2xl pl-12 outline-none transition-all font-bold shadow-sm"
                           required
                         />
                       </div>
@@ -1455,30 +1455,30 @@ export default function App() {
                 {loginMode === 'student' && (
                   <>
                     <div>
-                      <label className="text-[10px] font-black uppercase text-emerald-300 tracking-widest pl-2 mb-2 block font-black">Usuario (Registro o Ticket)</label>
+                      <label className="text-[10px] font-black uppercase text-emerald-700 tracking-widest pl-2 mb-2 block font-black">Usuario (Registro o Ticket)</label>
                       <div className="relative">
-                        <User className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-400/60 w-5 h-5" />
+                        <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
                         <input 
                           type="text" 
                           value={loginId}
                           onChange={(e) => setLoginId(e.target.value)}
                           placeholder="Ingrese su Registro o Ticket"
-                          className="w-full h-14 bg-[#011412]/60 border-2 border-emerald-500/15 focus:border-amber-400 focus:ring-4 focus:ring-amber-500/10 text-white placeholder:text-emerald-800 rounded-2xl pl-12 outline-none transition-all font-bold shadow-inner"
+                          className="w-full h-14 bg-slate-50 border-2 border-slate-200 focus:border-emerald-600 focus:bg-white text-[#111827] placeholder:text-slate-400 rounded-2xl pl-12 outline-none transition-all font-bold shadow-sm"
                           required
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="text-[10px] font-black uppercase text-emerald-300 tracking-widest pl-2 mb-2 block font-black">Contraseña (Cédula de Identidad)</label>
+                      <label className="text-[10px] font-black uppercase text-emerald-700 tracking-widest pl-2 mb-2 block font-black">Contraseña (Cédula de Identidad)</label>
                       <div className="relative">
-                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-400/60 w-5 h-5" />
+                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
                         <input 
                           type="password" 
                           value={loginPass}
                           onChange={(e) => setLoginPass(e.target.value)}
                           placeholder="Ingrese su Cédula de Identidad"
-                          className="w-full h-14 bg-[#011412]/60 border-2 border-emerald-500/15 focus:border-amber-400 focus:ring-4 focus:ring-amber-500/10 text-white placeholder:text-emerald-800 rounded-2xl pl-12 outline-none transition-all font-bold shadow-inner"
+                          className="w-full h-14 bg-slate-50 border-2 border-slate-200 focus:border-emerald-600 focus:bg-white text-[#111827] placeholder:text-slate-400 rounded-2xl pl-12 outline-none transition-all font-bold shadow-sm"
                           required
                         />
                       </div>
@@ -1486,9 +1486,9 @@ export default function App() {
                   </>
                 )}
 
-                {loginError && <p className="text-rose-300 text-xs font-black text-center bg-rose-950/45 p-3 rounded-xl border border-rose-500/20">{loginError}</p>}
+                {loginError && <p className="text-rose-700 text-xs font-black text-center bg-rose-50 p-3 rounded-xl border border-rose-200">{loginError}</p>}
 
-                <button disabled={isLoggingIn} type="submit" className="w-full h-16 bg-gradient-to-r from-amber-500 to-amber-600 text-[#011a16] rounded-2xl font-black text-lg hover:from-amber-400 hover:to-amber-500 transition-all flex items-center justify-center gap-2 transform active:scale-95 shadow-xl shadow-amber-950/40 disabled:opacity-50">
+                <button disabled={isLoggingIn} type="submit" className="w-full h-16 bg-gradient-to-r from-emerald-600 to-emerald-750 text-white rounded-2xl font-black text-lg hover:from-emerald-500 hover:to-emerald-650 transition-all flex items-center justify-center gap-2 transform active:scale-95 shadow-md disabled:opacity-50">
                   {isLoggingIn ? <Loader2 className="animate-spin" /> : "INGRESAR AL SISTEMA"}
                 </button>
               </form>
@@ -1503,39 +1503,39 @@ export default function App() {
     const studentLvl = currentStudent?.niv || parseInt(currentStudent?.semestre_activo?.split('-')[0]) || 0;
     
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-950 via-emerald-900 to-teal-950 font-sans p-4 md:p-8 text-white relative overflow-hidden">
+      <div className="min-h-screen bg-[#F8F9FA] font-sans p-4 md:p-8 text-[#111827] relative overflow-hidden">
         <CEICBackground />
         
         <div className="max-w-5xl mx-auto relative z-10">
           <header className="flex justify-between items-center mb-12">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-gradient-to-br from-emerald-500 to-teal-700 rounded-xl text-white shadow-lg border border-emerald-400/25"><Building2 size={24}/></div>
-              <h1 className="text-xl font-black text-white uppercase tracking-tighter">Portal Estudiante</h1>
+              <h1 className="text-xl font-black text-[#111827] uppercase tracking-tighter">Portal Estudiante</h1>
             </div>
-            <button onClick={handleLogout} className="flex items-center gap-2 px-5 py-2.5 bg-slate-900/40 border border-emerald-500/20 hover:border-rose-500/30 rounded-xl font-extrabold text-emerald-100 hover:text-rose-400 backdrop-blur-md transition-all">
+            <button onClick={handleLogout} className="flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 hover:border-rose-500/30 rounded-xl font-extrabold text-slate-700 hover:text-rose-600 shadow-sm transition-all">
               <LogOut size={18}/> Salir
             </button>
           </header>
 
-          <div className="bg-[#03241f]/50 backdrop-blur-md rounded-[2.5rem] p-8 md:p-12 shadow-2xl border border-emerald-500/20 mb-10 overflow-hidden relative">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-950/40 rounded-full blur-3xl -mr-20 -mt-20 opacity-30 border border-emerald-500/10 pointer-events-none"></div>
+          <div className="bg-white rounded-[2.5rem] p-8 md:p-12 shadow-md border border-slate-100 mb-10 overflow-hidden relative">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-50/40 rounded-full blur-3xl -mr-20 -mt-20 opacity-30 pointer-events-none"></div>
             <div className="flex flex-col md:flex-row gap-8 items-center mb-10 relative z-10">
-              <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-800 flex items-center justify-center text-white shadow-2xl shadow-emerald-950/40 border border-emerald-400/30"><User size={48} /></div>
+              <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-800 flex items-center justify-center text-white shadow-lg border border-emerald-400/30"><User size={48} /></div>
               <div className="text-center md:text-left">
-                <h2 className="text-3xl font-black text-white capitalize leading-tight mb-2">{currentStudent?.nombre.toLowerCase()}</h2>
+                <h2 className="text-3xl font-black text-[#111827] capitalize leading-tight mb-2">{currentStudent?.nombre.toLowerCase()}</h2>
                 <div className="flex flex-wrap justify-center md:justify-start gap-4">
-                  <span className="px-4 py-1.5 bg-emerald-950 text-emerald-300 border border-emerald-500/30 rounded-xl font-black text-xs uppercase tracking-widest">REG: {currentStudent?.registro}</span>
+                  <span className="px-4 py-1.5 bg-slate-100 text-slate-700 border border-slate-200/65 rounded-xl font-black text-xs uppercase tracking-widest">REG: {currentStudent?.registro}</span>
                   {currentStudent?.isExternal ? (
-                    <span className="px-4 py-1.5 bg-amber-950/60 text-amber-400 border border-amber-500/20 rounded-xl font-black text-xs uppercase tracking-widest">Estudiante Externo</span>
+                    <span className="px-4 py-1.5 bg-amber-50 text-amber-700 border border-amber-200/50 rounded-xl font-black text-xs uppercase tracking-widest">Estudiante Externo</span>
                   ) : (
-                    <span className="px-4 py-1.5 bg-emerald-950/80 text-emerald-400 border border-emerald-500/20 rounded-xl font-black text-xs uppercase tracking-widest">SEMESTRE: {currentStudent?.niv !== undefined ? currentStudent.niv : studentLvl}</span>
+                    <span className="px-4 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200/50 rounded-xl font-black text-xs uppercase tracking-widest">SEMESTRE: {currentStudent?.niv !== undefined ? currentStudent.niv : studentLvl}</span>
                   )}
                 </div>
               </div>
             </div>
 
-            <h3 className="text-xl font-black text-white mb-8 flex items-center gap-3">
-              <Calendar className="text-amber-400" /> Próximas Visitas Técnicas
+            <h3 className="text-xl font-black text-[#111827] mb-8 flex items-center gap-3">
+              <Calendar className="text-emerald-650" /> Próximas Visitas Técnicas
             </h3>
 
             <div className="flex flex-col gap-4">
@@ -1552,42 +1552,42 @@ export default function App() {
                     key={visit.id || `visit-row-${index}`} 
                     className={`group flex flex-col lg:flex-row lg:items-center justify-between gap-5 p-5 md:p-6 rounded-2xl border transition-all ${
                       isRegistered 
-                        ? 'bg-emerald-950/20 border-emerald-500/35 shadow-md shadow-emerald-950/10' 
+                        ? 'bg-emerald-50/40 border-emerald-500/35 shadow-sm' 
                         : isEligible 
-                          ? 'bg-[#021f1b]/45 hover:bg-[#022822]/65 border-emerald-500/10 hover:border-emerald-500/25' 
-                          : 'bg-slate-950/20 border-emerald-950/20 opacity-60'
+                          ? 'bg-white hover:bg-slate-50 border-slate-200/80 hover:border-slate-350 shadow-sm' 
+                          : 'bg-slate-50/70 border-slate-150/40 opacity-60'
                     }`}
                   >
                     {/* Date & Time Block */}
                     <div className="flex flex-col min-w-[200px]">
                       <div className="flex items-center gap-1.5">
-                        {isRegistered && <CheckCircle2 size={14} className="text-emerald-400 shrink-0" />}
-                        <p className="text-xs font-black text-amber-400 uppercase tracking-widest leading-none">
+                        {isRegistered && <CheckCircle2 size={14} className="text-emerald-600 shrink-0" />}
+                        <p className="text-xs font-black text-[#111827] uppercase tracking-widest leading-none">
                           {getDayAndDateStr(visit.fecha)}
                         </p>
                       </div>
-                      <p className="text-xs text-emerald-300/80 font-bold mt-1.5 flex items-center gap-1.5 pl-0.5">
-                        <Clock size={12} className="text-emerald-500/70 shrink-0" /> 
+                      <p className="text-xs text-[#4B5563] font-bold mt-1.5 flex items-center gap-1.5 pl-0.5">
+                        <Clock size={12} className="text-[#6B7280] shrink-0" /> 
                         {visit.horario || 'Sin Horario'}
                       </p>
                     </div>
 
                     {/* Company / Place Details */}
                     <div className="flex-1 flex flex-col justify-center">
-                      <h4 className="font-extrabold text-white text-base leading-snug group-hover:text-amber-300/90 transition-colors">
+                      <h4 className="font-extrabold text-[#111827] text-base leading-snug group-hover:text-emerald-700 transition-colors">
                         {visit.nombre}
                       </h4>
-                      <p className="text-xs text-slate-400 font-medium mt-1 line-clamp-2 max-w-2xl leading-relaxed">
+                      <p className="text-xs text-[#6B7280] font-medium mt-1 line-clamp-2 max-w-2xl leading-relaxed">
                         {visit.descripcion}
                       </p>
                     </div>
 
                     {/* Meta Indicators: Cupos & Requirements */}
-                    <div className="flex items-center gap-5 sm:gap-8 min-w-[250px] py-1 border-y border-emerald-500/5 lg:border-none lg:py-0">
+                    <div className="flex items-center gap-5 sm:gap-8 min-w-[250px] py-1 border-y border-slate-100 lg:border-none lg:py-0">
                       {/* Cupos */}
                       <div className="flex flex-col">
-                        <span className="text-xs font-black text-emerald-300 flex items-center gap-1">
-                          <Users size={12} className="text-emerald-400 shrink-0" />
+                        <span className="text-xs font-black text-emerald-600 flex items-center gap-1">
+                          <Users size={12} className="text-emerald-600 shrink-0" />
                           {remainingCupos} / {visit.cupos_max} cupos
                         </span>
                         <span className="text-[10px] text-slate-500 font-bold uppercase mt-0.5 tracking-wider leading-none">
@@ -1599,8 +1599,8 @@ export default function App() {
                       <div className="flex flex-col">
                         <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest text-center border mt-0.5 self-start ${
                           isEligible 
-                            ? 'bg-emerald-950/40 text-emerald-300 border-emerald-500/20' 
-                            : 'bg-rose-950/30 text-rose-300 border-rose-500/15'
+                            ? 'bg-emerald-50 text-emerald-750 border-emerald-500/20' 
+                            : 'bg-rose-50 text-rose-600 border-rose-500/20'
                         }`}>
                           MIN LVL {visit.min_nivel}
                         </span>
@@ -1611,10 +1611,10 @@ export default function App() {
                     </div>
 
                     {/* Actions / Status */}
-                    <div className="flex items-center justify-start lg:justify-end min-w-[180px] pt-2 lg:pt-0 border-t lg:border-t-0 border-emerald-500/5 lg:border-none">
+                    <div className="flex items-center justify-start lg:justify-end min-w-[180px] pt-2 lg:pt-0 border-t lg:border-t-0 border-slate-100 lg:border-none">
                       {isRegistered ? (
                         <div className="flex items-center lg:flex-col lg:items-end gap-3 lg:gap-1.5 w-full lg:w-auto justify-between lg:justify-center">
-                          <span className="flex items-center gap-1 text-emerald-400 font-black text-xs uppercase tracking-wider bg-emerald-950/60 border border-emerald-500/20 px-3 py-1 rounded-lg">
+                          <span className="flex items-center gap-1 text-emerald-700 font-black text-xs uppercase tracking-wider bg-emerald-50 border border-emerald-500/20 px-3 py-1 rounded-lg">
                             <Check size={14} /> Inscrito
                           </span>
                           <button
@@ -1623,25 +1623,25 @@ export default function App() {
                               setCancelReason('');
                               setRegError('');
                             }}
-                            className="px-3 py-1.5 bg-rose-950/40 hover:bg-rose-950/60 text-rose-300 border border-rose-500/25 font-extrabold rounded-lg text-[10px] uppercase tracking-wider transition-colors shadow-sm"
+                            className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-extrabold rounded-lg text-[10px] uppercase tracking-wider transition-colors shadow-sm"
                           >
                             Anular Inscripción
                           </button>
                         </div>
                       ) : isCanceled ? (
-                        <span className="flex items-center gap-1 px-3 py-1.5 bg-rose-950 text-rose-300 border border-rose-500/20 rounded-lg font-black text-[10px] uppercase tracking-wider">
+                        <span className="flex items-center gap-1 px-3 py-1.5 bg-rose-50 text-rose-700 border border-rose-200 rounded-lg font-black text-[10px] uppercase tracking-wider">
                           <XCircle size={12} /> Inscripción Anulada
                         </span>
                       ) : !isEligible ? (
-                        <div className="flex items-center gap-1.5 text-rose-300/80 font-bold text-xs uppercase tracking-wider py-1 pl-1">
-                          <Lock size={12} className="text-rose-400 shrink-0 animate-pulse" />
-                          <span className="text-[10px] leading-tight text-rose-350 bg-rose-950/20 px-2 py-1 rounded">Semestre insuficiente (Requerido: Nivel {visit.min_nivel})</span>
+                        <div className="flex items-center gap-1.5 text-rose-700 font-bold text-xs uppercase tracking-wider py-1 pl-1">
+                          <Lock size={12} className="text-rose-500 shrink-0" />
+                          <span className="text-[10px] leading-tight text-rose-700 bg-rose-50 px-2.5 py-1 rounded border border-rose-200">Semestre insuficiente (Requerido: Nivel {visit.min_nivel})</span>
                         </div>
                       ) : (
                         <button 
                           disabled={isBooking === visit.id}
                           onClick={() => handleRegisterForVisit(visit.id)}
-                          className="w-full lg:w-auto px-4 py-2.5 rounded-xl text-xs font-black bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white shadow-lg shadow-emerald-950/55 transition-all uppercase tracking-wider transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-1.5"
+                          className="w-full lg:w-auto px-4 py-2.5 rounded-xl text-xs font-black bg-gradient-to-r from-emerald-600 to-emerald-750 text-white shadow-md hover:shadow-lg transition-all uppercase tracking-wider transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-1.5"
                         >
                           {isBooking === visit.id ? (
                             <>
@@ -1660,15 +1660,15 @@ export default function App() {
             </div>
           </div>
           
-          <div className="p-8 bg-gradient-to-r from-[#022c22] to-teal-950 rounded-3xl text-white flex flex-col md:flex-row items-center gap-6 justify-between border border-emerald-500/20 shadow-xl shadow-slate-950/30">
+          <div className="p-8 bg-white rounded-3xl text-slate-800 flex flex-col md:flex-row items-center gap-6 justify-between border border-slate-200 shadow-sm">
             <div className="flex items-center gap-4">
-              <Mail className="text-amber-400" />
+              <Mail className="text-emerald-600" />
               <div>
-                <p className="text-xs font-black uppercase text-emerald-400 tracking-widest leading-none mb-1">Dirección de Carrera de Ingeniería Civil</p>
-                <p className="font-bold text-sm text-slate-200">72191068 Coordinación de Carrera | 72191592 Secretaría de Ingeniería Civil</p>
+                <p className="text-xs font-black uppercase text-emerald-700 tracking-widest leading-none mb-1">Dirección de Carrera de Ingeniería Civil</p>
+                <p className="font-bold text-sm text-slate-600">72191068 Coordinación de Carrera | 72191592 Secretaría de Ingeniería Civil</p>
               </div>
             </div>
-            <div className="px-6 py-2 bg-emerald-950/60 rounded-2xl border border-emerald-500/20 text-xs font-mono text-emerald-300">APP_VERSION: 2.1.0-STABLE</div>
+            <div className="px-6 py-2 bg-slate-50 rounded-2xl border border-slate-200 text-xs font-mono text-slate-600">APP_VERSION: 2.1.0-STABLE</div>
           </div>
 
           <AnimatePresence>
@@ -1677,57 +1677,57 @@ export default function App() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-slate-950/80 backdrop-blur-xl z-[100] flex items-center justify-center p-0 md:p-8 overflow-y-auto"
+                className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[100] flex items-center justify-center p-0 md:p-8 overflow-y-auto"
               >
                 <motion.div 
                    initial={{ scale: 0.95, opacity: 0 }}
                    animate={{ scale: 1, opacity: 1 }}
                    exit={{ scale: 0.95, opacity: 0 }}
-                   className="bg-[#021c17] text-white rounded-none md:rounded-[3rem] w-full max-w-5xl min-h-screen md:min-h-0 shadow-2xl relative overflow-hidden flex flex-col md:flex-row border border-emerald-500/10"
+                   className="bg-white text-[#111827] rounded-none md:rounded-[3rem] w-full max-w-5xl min-h-screen md:min-h-0 shadow-2xl relative overflow-hidden flex flex-col md:flex-row border border-slate-200"
                 >
                   {/* Left Sidebar - Steps Indicator */}
-                  <div className="w-full md:w-80 bg-[#011411] p-8 md:p-12 border-b md:border-b-0 md:border-r border-emerald-950/40 flex flex-col">
+                  <div className="w-full md:w-80 bg-slate-50 p-8 md:p-12 border-b md:border-b-0 md:border-r border-slate-200 flex flex-col">
                     <button 
                       onClick={() => setShowRegModal(null)}
-                      className="absolute top-8 left-8 p-2 bg-[#022a22] text-emerald-300 hover:text-rose-400 rounded-full shadow-md border border-emerald-500/20 transition-all z-[110]"
+                      className="absolute top-8 left-8 p-2 bg-white text-slate-600 hover:text-rose-600 rounded-full shadow-sm border border-slate-200 transition-all z-[110]"
                     >
                       <XCircle size={32} />
                     </button>
 
                     <div className="mt-12 flex-1">
-                      <div className="p-4 bg-gradient-to-br from-emerald-500 to-teal-800 w-fit rounded-2xl text-white shadow-xl border border-emerald-400/20 mb-6">
+                      <div className="p-4 bg-emerald-600 w-fit rounded-2xl text-white shadow-md mb-6">
                         <ClipboardList size={32} />
                       </div>
-                      <h2 className="text-2xl font-black text-white leading-tight mb-2">Inscripción Civil</h2>
-                      <p className="text-emerald-300 text-xs font-bold uppercase tracking-wider mb-12">{availableVisits.find(v => v.id === showRegModal)?.nombre}</p>
+                      <h2 className="text-2xl font-black text-[#111827] leading-tight mb-2">Inscripción Civil</h2>
+                      <p className="text-emerald-700 text-xs font-bold uppercase tracking-wider mb-12">{availableVisits.find(v => v.id === showRegModal)?.nombre}</p>
 
                       <div className="space-y-10">
                         <div className={`flex items-center gap-4 transition-all ${regStep === 1 ? 'scale-105' : 'opacity-40'}`}>
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black ${regStep === 1 ? 'bg-amber-500 text-teal-950' : 'bg-[#03241e] text-emerald-500 border border-emerald-900/30'}`}>1</div>
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black ${regStep === 1 ? 'bg-emerald-600 text-white shadow-sm' : 'bg-slate-200 text-slate-600'}`}>1</div>
                           <div>
-                            <p className="text-[10px] font-black uppercase text-emerald-400 tracking-widest leading-none mb-1">Paso 1</p>
-                            <p className="font-bold text-white">Seguro y EPP</p>
+                            <p className="text-[10px] font-black uppercase text-emerald-700 tracking-widest leading-none mb-1">Paso 1</p>
+                            <p className="font-bold text-[#111827]">Seguro y EPP</p>
                           </div>
                         </div>
                         <div className={`flex items-center gap-4 transition-all ${regStep === 2 ? 'scale-105' : 'opacity-40'}`}>
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black ${regStep === 2 ? 'bg-amber-500 text-teal-950' : 'bg-[#03241e] text-emerald-500 border border-emerald-900/30'}`}>2</div>
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black ${regStep === 2 ? 'bg-emerald-600 text-white shadow-sm' : 'bg-slate-200 text-slate-600'}`}>2</div>
                           <div>
-                            <p className="text-[10px] font-black uppercase text-emerald-400 tracking-widest leading-none mb-1">Paso 2</p>
-                            <p className="font-bold text-white">Salud y Emergencia</p>
+                            <p className="text-[10px] font-black uppercase text-emerald-700 tracking-widest leading-none mb-1">Paso 2</p>
+                            <p className="font-bold text-[#111827]">Salud y Emergencia</p>
                           </div>
                         </div>
                       </div>
                     </div>
 
                     <div className="mt-auto pt-8">
-                       <button onClick={() => setShowRegModal(null)} className="text-xs font-black text-emerald-400 hover:text-rose-400 uppercase tracking-widest flex items-center gap-2 transition-colors">
+                       <button onClick={() => setShowRegModal(null)} className="text-xs font-black text-rose-600 hover:text-rose-700 uppercase tracking-widest flex items-center gap-2 transition-colors">
                           <XCircle size={14}/> Cancelar Inscripción
                        </button>
                     </div>
                   </div>
 
                   {/* Main Form Area */}
-                  <div className="flex-1 p-8 md:p-16 flex flex-col justify-between">
+                  <div className="flex-1 p-8 md:p-16 flex flex-col justify-between bg-white text-[#111827]">
                     <AnimatePresence mode="wait">
                       {regStep === 1 ? (
                         <motion.div 
@@ -1738,20 +1738,20 @@ export default function App() {
                           className="flex-1 flex flex-col justify-between"
                         >
                           <div>
-                            <h3 className="text-4xl font-black text-white mb-4 tracking-tighter">Seguridad Industrial</h3>
-                            <p className="text-emerald-200/60 text-sm mb-10 font-bold max-w-md">Para el ingreso a planta, el seguro de accidentes y el equipamiento de protección son requisitos institucionales obligatorios.</p>
+                            <h3 className="text-4xl font-black text-[#111827] mb-4 tracking-tighter">Seguridad Industrial</h3>
+                            <p className="text-slate-600 text-sm mb-10 font-bold max-w-md">Para el ingreso a planta, el seguro de accidentes y el equipamiento de protección son requisitos institucionales obligatorios.</p>
 
                             <div className="space-y-12">
                               {/* Seguro Section */}
                               <div className="relative">
                                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                                   <div className="flex items-center gap-3">
-                                    <div className="p-2.5 bg-rose-950/40 text-rose-400 rounded-xl border border-rose-500/20"><ShieldCheck size={24}/></div>
-                                    <label className="text-lg font-bold text-white tracking-tight">¿Cuenta con seguro vigente Uni Vida?</label>
+                                    <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100"><ShieldCheck size={24}/></div>
+                                    <label className="text-lg font-bold text-[#111827] tracking-tight">¿Cuenta con seguro vigente Uni Vida?</label>
                                   </div>
-                                  <div className="flex gap-2 p-1 bg-[#011411] rounded-2xl border border-emerald-500/10 shrink-0">
-                                    <button onClick={() => setRegForm({...regForm, tiene_seguro: true})} className={`px-6 py-2 rounded-xl text-xs font-black transition-all ${regForm.tiene_seguro ? 'bg-emerald-600 text-white shadow-md' : 'text-emerald-500 hover:text-emerald-300'}`}>SÍ</button>
-                                    <button onClick={() => setRegForm({...regForm, tiene_seguro: false})} className={`px-6 py-2 rounded-xl text-xs font-black transition-all ${!regForm.tiene_seguro ? 'bg-rose-950 text-rose-400 shadow-md border border-rose-500/20' : 'text-emerald-500 hover:text-emerald-300'}`}>NO</button>
+                                  <div className="flex gap-2 p-1 bg-slate-100 rounded-2xl border border-slate-200 shrink-0">
+                                    <button onClick={() => setRegForm({...regForm, tiene_seguro: true})} className={`px-6 py-2 rounded-xl text-xs font-black transition-all ${regForm.tiene_seguro ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-850'}`}>SÍ</button>
+                                    <button onClick={() => setRegForm({...regForm, tiene_seguro: false})} className={`px-6 py-2 rounded-xl text-xs font-black transition-all ${!regForm.tiene_seguro ? 'bg-rose-100 text-rose-700 shadow-sm border border-rose-200' : 'text-slate-600 hover:text-slate-850'}`}>NO</button>
                                   </div>
                                 </div>
 
@@ -1763,24 +1763,24 @@ export default function App() {
                                       exit={{ height: 0, opacity: 0 }}
                                       className="overflow-hidden"
                                     >
-                                      <div className="p-6 bg-[#011411]/50 backdrop-blur-md rounded-3xl border-2 border-dashed border-emerald-500/20 mt-2">
+                                      <div className="p-6 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200 mt-2">
                                         <div className="flex flex-col items-center">
-                                           <Upload className="text-emerald-500/30 mb-3" size={32} />
-                                           <p className="text-xs font-black text-emerald-400 uppercase tracking-widest mb-4">Adjuntar Comprobante (FOTO/PDF/PNG)</p>
+                                           <Upload className="text-slate-400 mb-3" size={32} />
+                                           <p className="text-xs font-black text-[#111827] uppercase tracking-widest mb-4">Adjuntar Comprobante (FOTO/PDF/PNG)</p>
                                            <input 
                                              type="file" 
                                              accept="image/*,.pdf"
                                              onChange={(e) => setComprobanteFile(e.target.files?.[0] || null)}
-                                             className="text-xs text-emerald-200 file:mr-4 file:py-2 file:px-6 file:rounded-full file:border-0 file:text-xs file:font-black file:bg-emerald-800 file:text-white hover:file:bg-emerald-700 cursor-pointer"
+                                             className="text-xs text-slate-600 file:mr-4 file:py-2 file:px-6 file:rounded-full file:border file:border-slate-200 file:text-xs file:font-black file:bg-slate-100 file:text-[#111827] hover:file:bg-slate-200 cursor-pointer"
                                            />
-                                           {comprobanteFile && <div className="mt-4 flex items-center gap-2 text-emerald-400 font-extrabold text-xs bg-emerald-950/60 px-4 py-2 rounded-xl border border-emerald-500/30"><Check size={18}/> {comprobanteFile.name}</div>}
+                                           {comprobanteFile && <div className="mt-4 flex items-center gap-2 text-emerald-700 font-extrabold text-xs bg-emerald-50 px-4 py-2 rounded-xl border border-emerald-500/20"><Check size={18}/> {comprobanteFile.name}</div>}
                                         </div>
                                       </div>
                                     </motion.div>
                                   ) : (
-                                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 bg-rose-950/40 border border-rose-500/20 rounded-2xl flex items-center gap-3 mt-4">
-                                      <AlertCircle className="text-rose-400 shrink-0" />
-                                      <p className="text-rose-300 text-xs font-black uppercase tracking-widest">El seguro es requisito obligatorio para validar su participación.</p>
+                                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 bg-red-50 border border-red-200 rounded-2xl flex items-center gap-4 mt-4">
+                                      <AlertCircle className="text-red-700 shrink-0 shadow-sm" />
+                                      <p className="text-red-800 text-xs font-extrabold uppercase tracking-widest leading-loose">EL SEGURO ES REQUISITO OBLIGATORIO PARA VALIDAR SU PARTICIPACIÓN.</p>
                                     </motion.div>
                                   )}
                                 </AnimatePresence>
@@ -1791,25 +1791,25 @@ export default function App() {
                                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                                   <div className="flex flex-col">
                                     <div className="flex items-center gap-3">
-                                      <div className="p-2.5 bg-[#011411] text-emerald-400 rounded-xl border border-emerald-500/10"><Database size={24}/></div>
-                                      <label className="text-lg font-bold text-white tracking-tight">¿Cuenta con Equipo de Protección (EPP)?</label>
+                                      <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100"><Database size={24}/></div>
+                                      <label className="text-lg font-bold text-[#111827] tracking-tight">¿Cuenta con Equipo de Protección (EPP)?</label>
                                     </div>
-                                    <span className="mt-1 text-[10px] text-emerald-300/60 font-black uppercase tracking-wider pl-[44px]">(Pantalón de jean, camisa manga larga, casco, botas con punta de acero)</span>
+                                    <span className="mt-1 text-[10px] text-slate-500 font-bold uppercase tracking-wider pl-[44px]">(Pantalón de jean, camisa manga larga, casco, botas con punta de acero)</span>
                                   </div>
-                                  <div className="flex gap-2 p-1 bg-[#011411] rounded-2xl border border-emerald-500/10 shrink-0">
-                                    <button onClick={() => setRegForm({...regForm, tiene_epp: true})} className={`px-6 py-2 rounded-xl text-xs font-black transition-all ${regForm.tiene_epp ? 'bg-emerald-600 text-white shadow-md' : 'text-emerald-500 hover:text-emerald-300'}`}>SÍ</button>
-                                    <button onClick={() => setRegForm({...regForm, tiene_epp: false})} className={`px-6 py-2 rounded-xl text-xs font-black transition-all ${!regForm.tiene_epp ? 'bg-rose-950 text-rose-400 shadow-md border border-rose-500/20' : 'text-emerald-500 hover:text-emerald-300'}`}>NO</button>
+                                  <div className="flex gap-2 p-1 bg-slate-100 rounded-2xl border border-slate-200 shrink-0">
+                                    <button onClick={() => setRegForm({...regForm, tiene_epp: true})} className={`px-6 py-2 rounded-xl text-xs font-black transition-all ${regForm.tiene_epp ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-850'}`}>SÍ</button>
+                                    <button onClick={() => setRegForm({...regForm, tiene_epp: false})} className={`px-6 py-2 rounded-xl text-xs font-black transition-all ${!regForm.tiene_epp ? 'bg-rose-100 text-rose-700 shadow-sm border border-rose-200' : 'text-slate-600 hover:text-slate-850'}`}>NO</button>
                                   </div>
                                 </div>
                               </div>
                             </div>
                           </div>
 
-                          <div className="mt-8 flex justify-end pt-8 border-t border-emerald-500/10">
+                          <div className="mt-8 flex justify-end pt-8 border-t border-slate-200">
                             <button 
                               onClick={() => setRegStep(2)}
                               disabled={!regForm.tiene_seguro || !comprobanteFile}
-                              className="h-16 px-12 bg-gradient-to-r from-amber-500 to-amber-600 text-teal-950 rounded-[2rem] font-black text-sm hover:scale-105 transition-all shadow-xl disabled:opacity-30 disabled:grayscale flex items-center gap-3"
+                              className="h-16 px-12 bg-gradient-to-r from-emerald-600 to-emerald-750 text-white rounded-[2rem] font-black text-sm hover:scale-105 transition-all shadow-md disabled:opacity-30 disabled:grayscale flex items-center gap-3"
                             >Siguiente Paso <CheckCircle2 size={20}/></button>
                           </div>
                         </motion.div>
@@ -1822,51 +1822,51 @@ export default function App() {
                           className="flex-1 flex flex-col justify-between"
                         >
                           <div>
-                            <h3 className="text-4xl font-black text-white mb-4 tracking-tighter">Información Médica</h3>
-                            <p className="text-emerald-200/60 mb-10 font-bold text-sm max-w-md">Estos datos son de carácter estrictamente confidencial para uso médico preventivo en la visita.</p>
+                            <h3 className="text-4xl font-black text-[#111827] mb-4 tracking-tighter">Información Médica</h3>
+                            <p className="text-slate-600 mb-10 font-bold text-sm max-w-md">Estos datos son de carácter estrictamente confidencial para uso médico preventivo en la visita.</p>
 
                             <div className="space-y-8 flex-1">
                               <div>
-                                 <label className="text-[10px] font-black uppercase text-emerald-300 tracking-widest mb-3 block pl-2">Estado de Salud / Alergias relevantes</label>
+                                 <label className="text-[10px] font-black uppercase text-emerald-700 tracking-widest mb-3 block pl-2">Estado de Salud / Alergias relevantes</label>
                                  <textarea 
                                    value={regForm.problema_salud}
                                    onChange={(e) => setRegForm({...regForm, problema_salud: e.target.value})}
                                    placeholder="Indique si padece alguna afección de salud, alergia relevante o si prefiere reportar estado saludable..."
-                                   className="w-full h-40 p-6 bg-[#011411]/60 border-2 border-emerald-500/15 focus:border-amber-400 text-white rounded-3xl outline-none transition-all placeholder:text-emerald-800 font-medium resize-none shadow-inner"
+                                   className="w-full h-40 p-6 bg-slate-50 border-2 border-slate-200 focus:border-emerald-500 text-[#111827] rounded-3xl outline-none transition-all placeholder:text-slate-400 font-medium resize-none shadow-sm"
                                  />
                               </div>
 
                               <div>
-                                 <label className="text-[10px] font-black uppercase text-emerald-300 tracking-widest mb-3 block pl-2">Teléfono de Emergencia (Referencia familiar)</label>
+                                 <label className="text-[10px] font-black uppercase text-emerald-700 tracking-widest mb-3 block pl-2">Teléfono de Emergencia (Referencia familiar)</label>
                                  <div className="relative">
-                                    <Users className="absolute left-6 top-1/2 -translate-y-1/2 text-emerald-600 pointer-events-none" size={24} />
+                                    <Users className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={24} />
                                     <input 
                                       type="number"
                                       value={regForm.contacto_referencia}
                                       onChange={(e) => setRegForm({...regForm, contacto_referencia: e.target.value})}
                                       placeholder="Número celular de contacto de emergencia"
-                                      className="w-full h-20 pl-16 pr-8 bg-[#011411]/60 border-2 border-emerald-500/15 focus:border-amber-400 text-white rounded-3xl outline-none transition-all text-xl font-black shadow-inner"
+                                      className="w-full h-20 pl-16 pr-8 bg-slate-50 border-2 border-slate-200 focus:border-emerald-500 text-[#111827] rounded-3xl outline-none transition-all text-xl font-black shadow-sm"
                                     />
                                  </div>
                               </div>
                             </div>
                           </div>
 
-                          <div className="mt-8 flex justify-between items-center bg-[#011411]/80 p-4 rounded-[2.5rem] border border-emerald-500/10">
+                          <div className="mt-8 flex justify-between items-center bg-slate-50 p-4 rounded-[2.5rem] border border-slate-200">
                             <button 
                               onClick={() => setRegStep(1)}
-                              className="h-16 px-8 text-emerald-400 font-extrabold text-sm uppercase tracking-widest hover:text-emerald-200 transition-colors"
+                              className="h-16 px-8 text-slate-600 font-extrabold text-sm uppercase tracking-widest hover:text-slate-800 transition-colors"
                             >Volver</button>
 
                             <button 
                               onClick={submitRegistration}
                               disabled={isBooking !== null || !regForm.contacto_referencia.trim()}
-                              className="h-16 px-12 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-2xl font-black text-lg hover:scale-105 transition-all shadow-xl flex items-center justify-center disabled:opacity-40"
+                              className="h-16 px-12 bg-gradient-to-r from-emerald-600 to-emerald-750 text-white rounded-2xl font-black text-lg hover:scale-105 transition-all shadow-md flex items-center justify-center disabled:opacity-40"
                             >
                               CONFIRMAR ASISTENCIA
                             </button>
                           </div>
-                          {regError && <p className="mt-4 text-center text-xs font-black text-rose-400 uppercase tracking-widest animate-pulse">{regError}</p>}
+                          {regError && <p className="mt-4 text-center text-xs font-black text-rose-600 uppercase tracking-widest animate-pulse">{regError}</p>}
                         </motion.div>
                       )}
                     </AnimatePresence>
@@ -1880,48 +1880,48 @@ export default function App() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-slate-950/80 backdrop-blur-xl z-[100] flex items-center justify-center p-4 overflow-y-auto"
+                className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[100] flex items-center justify-center p-4 overflow-y-auto"
               >
                 <motion.div 
                   initial={{ scale: 0.95, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   exit={{ scale: 0.95, opacity: 0 }}
-                  className="bg-[#021c17] text-white rounded-[2.5rem] w-full max-w-lg p-8 md:p-10 shadow-2xl relative border border-emerald-500/10"
+                  className="bg-white text-[#111827] rounded-[2.5rem] w-full max-w-lg p-8 md:p-10 shadow-2xl relative border border-slate-200"
                 >
                   <button 
                     onClick={() => setShowCancelModal(null)}
-                    className="absolute top-6 right-6 p-2 bg-[#022a22] text-emerald-300 hover:text-rose-400 rounded-full transition-all border border-emerald-500/20"
+                    className="absolute top-6 right-6 p-2 bg-slate-100 text-slate-600 hover:text-rose-600 rounded-full transition-all border border-slate-200"
                   >
                     <XCircle size={24} />
                   </button>
 
                   <div className="mb-6 mt-2">
-                    <div className="p-4 bg-rose-950/40 border border-rose-500/20 text-rose-400 w-fit rounded-2xl shadow-sm mb-4">
+                    <div className="p-4 bg-rose-50 border border-rose-200 text-rose-600 w-fit rounded-2xl shadow-sm mb-4">
                       <AlertTriangle size={32} />
                     </div>
-                    <h2 className="text-2xl font-black text-white leading-tight">Anular Inscripción</h2>
-                    <p className="text-emerald-200/60 text-xs font-extrabold mt-1 leading-normal">
+                    <h2 className="text-2xl font-black text-[#111827] leading-tight">Anular Inscripción</h2>
+                    <p className="text-slate-600 text-xs font-extrabold mt-1 leading-normal">
                       ¿Está seguro que desea anular su inscripción para <strong>{availableVisits.find(v => v.id === showCancelModal)?.nombre}</strong>?
                     </p>
                   </div>
 
                   <div className="space-y-4">
                     <div>
-                      <label className="text-[10px] font-black uppercase text-rose-300 tracking-widest pl-2 mb-2 block">
+                      <label className="text-[10px] font-black uppercase text-rose-600 tracking-widest pl-2 mb-2 block">
                         Motivo de la Anulación (Obligatorio)
                       </label>
                       <textarea
                         value={cancelReason}
                         onChange={(e) => setCancelReason(e.target.value)}
                         placeholder="Ej. Cruce de materias, enfermedad, etc."
-                        className="w-full h-32 p-4 bg-[#011411]/60 border-2 border-emerald-500/15 focus:border-rose-400 text-white rounded-2xl outline-none transition-all placeholder:text-emerald-800 font-bold text-sm resize-none shadow-inner"
+                        className="w-full h-32 p-4 bg-slate-50 border-2 border-slate-200 focus:border-rose-500 text-[#111827] rounded-2xl outline-none transition-all placeholder:text-slate-400 font-bold text-sm resize-none shadow-sm"
                         required
                       />
                     </div>
                   </div>
 
                   {regError && (
-                    <p className="mt-4 text-[10px] font-black text-rose-400 uppercase tracking-widest text-center animate-pulse">
+                    <p className="mt-4 text-[10px] font-black text-rose-600 uppercase tracking-widest text-center animate-pulse">
                       {regError}
                     </p>
                   )}
@@ -1929,14 +1929,14 @@ export default function App() {
                   <div className="mt-8 flex gap-4 justify-end">
                     <button
                       onClick={() => setShowCancelModal(null)}
-                      className="px-6 h-12 rounded-xl text-xs font-black uppercase tracking-widest text-emerald-400 hover:text-emerald-200 transition-colors"
+                      className="px-6 h-12 rounded-xl text-xs font-black uppercase tracking-widest text-slate-600 hover:text-slate-800 transition-colors"
                     >
                       Cancelar
                     </button>
                     <button
                       onClick={submitCancellation}
                       disabled={isCanceling || !cancelReason.trim()}
-                      className="px-8 h-12 bg-rose-950 text-rose-300 border border-rose-500/20 hover:bg-rose-900 disabled:opacity-30 rounded-xl font-black text-xs uppercase tracking-widest shadow-xl flex items-center justify-center transition-all hover:scale-105"
+                      className="px-8 h-12 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 disabled:opacity-30 rounded-xl font-black text-xs uppercase tracking-widest shadow-sm flex items-center justify-center transition-all hover:scale-105"
                     >
                       Confirmar Anulación
                     </button>

@@ -2,5 +2,5 @@
   "name": "Validador de Visitas Técnicas",
   "description": "Aplicación para validar la elegibilidad de estudiantes de Ingeniería Civil para visitas técnicas basadas en su semestre actual.",
   "requestFramePermissions": ["camera"],
-  "majorCapabilities": []
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
