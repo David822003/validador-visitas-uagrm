@@ -853,6 +853,116 @@ export default function App() {
       }
     }
   };
+
+  const exportVisitsToPDF = () => {
+    // Create new PDF layout (A4 landscape for wide table)
+    const doc = new jsPDF('l', 'mm', 'a4');
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 14;
+
+    // Elegant Top Header Accent Banner Bar in green esmeralda oscuro #047857
+    doc.setFillColor(4, 120, 87); // #047857
+    doc.rect(0, 0, pageWidth, 28, 'F');
+
+    // Title inside the banner in white letters
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.setTextColor(255, 255, 255);
+    doc.text("UNIVERSIDAD AUTÓNOMA GABRIEL RENÉ MORENO - UAGRM", pageWidth / 2, 10, { align: "center" });
+    doc.setFontSize(14);
+    doc.text("REPORTE DE VISITAS TÉCNICAS PROGRAMADAS - INGENIERÍA CIVIL", pageWidth / 2, 18, { align: "center" });
+
+    // Current date and time
+    const today = new Date();
+    const dateStr = today.toLocaleDateString('es-ES', {
+      day: '2-digit', month: '2-digit', year: 'numeric'
+    });
+    const timeStr = today.toLocaleTimeString('es-ES', {
+      hour: '2-digit', minute: '2-digit', second: '2-digit'
+    });
+
+    // Content Metadata Section
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9.5);
+    doc.setTextColor(71, 85, 105); // slate-600
+    doc.text(`Fecha y Hora de Emisión: ${dateStr} ${timeStr}`, margin, 36);
+    doc.text(`Total Visitas: ${availableVisits.length}`, pageWidth - margin - 35, 36);
+
+    // Dynamic row building
+    const headers = [['N°', 'Empresa / Visita', 'Ubicación / Planta', 'Fecha / Hora', 'Nivel Mínimo', 'Cupos (Ocupados / Máx)', 'Seguro UniVida']];
+    const bodyRows = availableVisits.map((v, index) => {
+      const registeredCount = allRegistrations.filter(r => r.visita_id === v.id && r.estado !== 'ANULADO').length;
+      
+      const dateParts = (v.fecha || '').split('-');
+      const formattedDate = dateParts.length === 3 ? `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}` : v.fecha;
+      
+      const abbreviatedId = v.id ? v.id.split('-')[0] : '';
+      const displayVisitName = `${v.nombre}\n(ID: ${abbreviatedId})`;
+      
+      return [
+        index + 1,
+        displayVisitName,
+        v.descripcion || 'No especificada',
+        `${formattedDate}\n${v.horario || 'N/D'}`,
+        `Nivel ${v.min_nivel}+`,
+        `${registeredCount} / ${v.cupos_max}`,
+        v.requiereSeguro !== false ? 'Requerido' : 'Opcional'
+      ];
+    });
+
+    autoTable(doc, {
+      startY: 42,
+      head: headers,
+      body: bodyRows,
+      margin: { left: margin, right: margin },
+      styles: {
+        fontSize: 9,
+        cellPadding: 4.5,
+        font: "helvetica",
+        lineColor: [226, 232, 240], // #e2e8f0 fine lines
+        lineWidth: 0.1,
+        valign: 'middle'
+      },
+      columnStyles: {
+        0: { cellWidth: 10, halign: 'center' },
+        1: { fontStyle: 'bold' },
+        3: { halign: 'center' },
+        4: { halign: 'center' },
+        5: { halign: 'center', fontStyle: 'bold' },
+        6: { halign: 'center' }
+      },
+      headStyles: {
+        fillColor: [4, 120, 87], // #047857 esmeralda oscuro
+        textColor: [255, 255, 255],
+        fontStyle: 'bold'
+      },
+      alternateRowStyles: {
+        fillColor: [248, 250, 252] // Alternating with sutil slate background
+      },
+      theme: 'striped'
+    });
+
+    // Executive Footer block
+    const footerY = pageHeight - 12;
+    doc.setDrawColor(226, 232, 240); // slate-200
+    doc.setLineWidth(0.5);
+    doc.line(margin, footerY - 4, pageWidth - margin, footerY - 4);
+
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "italic");
+    doc.setTextColor(148, 163, 184); // slate-400
+    doc.text("Coordinación de Ingeniería Civil - Centro de Estudiantes de Ingeniería Civil (CEIC)", margin, footerY + 1);
+    doc.text(`Documento de emisión oficial y validación de visitas académicas.`, margin, footerY + 5);
+
+    doc.setFont("helvetica", "normal");
+    doc.text(`Pág. 1 de 1`, pageWidth - margin - 15, footerY + 3);
+
+    // Format download filename: reporte_visitas_tecnicas_[fecha].pdf
+    const fileSuffix = dateStr.replace(/\//g, '_');
+    doc.save(`reporte_visitas_tecnicas_${fileSuffix}.pdf`);
+  };
+
   const exportToPDF = () => {
     if (!selectedVisitForStatus) return;
     
@@ -2081,17 +2191,25 @@ export default function App() {
 
             {adminTab === 'visitas' && (
               <motion.div key="vis" initial={{opacity:0, y:20}} animate={{opacity:1, y:0}} className="space-y-6">
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
                   <div>
                     <h2 className="text-2xl font-black text-white">Gestión de Visitas</h2>
                     <p className="text-sm text-emerald-300/60 font-bold tracking-tight">Administre las visitas técnicas y empresas registradas.</p>
                   </div>
-                  <button 
-                    onClick={() => { handleResetVisitForm(); setShowVisitModal(true); }}
-                    className="px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-teal-950 rounded-2xl font-black text-sm flex items-center gap-2 hover:from-amber-400 hover:to-amber-500 transition-all shadow-lg shadow-amber-950/35"
-                  >
-                    <Plus size={18}/> Nueva Visita
-                  </button>
+                  <div className="flex items-center gap-3 self-end sm:self-center">
+                    <button 
+                      onClick={exportVisitsToPDF}
+                      className="px-5 py-3 bg-[#0d503c] hover:bg-[#0f5c45] border border-emerald-500/30 text-white rounded-2xl font-black text-sm flex items-center gap-2 transition-all cursor-pointer shadow-lg shadow-teal-950/20"
+                    >
+                      <FileText size={18} className="text-emerald-400"/> Exportar PDF
+                    </button>
+                    <button 
+                      onClick={() => { handleResetVisitForm(); setShowVisitModal(true); }}
+                      className="px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-teal-950 rounded-2xl font-black text-sm flex items-center gap-2 hover:from-amber-400 hover:to-amber-500 transition-all shadow-lg shadow-amber-950/35"
+                    >
+                      <Plus size={18}/> Nueva Visita
+                    </button>
+                  </div>
                 </div>
 
                 <div className="bg-white rounded-[2rem] shadow-xl border border-slate-200 overflow-hidden text-slate-800">
