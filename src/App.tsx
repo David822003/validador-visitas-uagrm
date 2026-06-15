@@ -659,6 +659,40 @@ export default function App() {
       const visitId = String(showRegModal); // Ensure it's string (UUID)
       const visitName = availableVisits.find(v => v.id === visitId)?.nombre || 'Visita Técnica';
 
+      // 1. Fetch live visit details to verify capacity limits
+      const { data: liveVisit, error: visitFetchError } = await supabase
+        .from('visitas')
+        .select('cupos_max, nombre')
+        .eq('id', visitId)
+        .single();
+
+      if (visitFetchError || !liveVisit) {
+        throw new Error('No se pudo encontrar la visita seleccionada.');
+      }
+
+      const limit = liveVisit.cupos_max;
+
+      // 2. Fetch live count of non-canceled registrations
+      const { data: liveRegs, error: countError } = await supabase
+        .from('inscripciones')
+        .select('id, estado')
+        .eq('visita_id', visitId)
+        .neq('estado', 'ANULADO');
+
+      if (countError) {
+        throw new Error('No se pudo verificar la disponibilidad de cupos.');
+      }
+
+      const currentCount = liveRegs ? liveRegs.length : 0;
+
+      if (currentCount >= limit) {
+        setRegError('Esta visita técnica ya no cuenta con cupos disponibles.');
+        setIsBooking(null);
+        await fetchVisits();
+        await fetchAllRegistrations();
+        return;
+      }
+
       let comprobanteUrl = '';
 
       if (comprobanteFile) {
@@ -1119,7 +1153,10 @@ export default function App() {
     doc.setTextColor(15, 23, 42);
     doc.text(`${selectedVisitForStatus.fecha} | ${selectedVisitForStatus.horario || 'N/D'}`, margin + 31, boxY + 23);
 
-    const totalInscritos = enrolledStudents.filter((r: any) => (r.estado || 'INSCRITO') !== 'ANULADO').length;
+    // Filter out canceled or annulled registrations strictly so only "INSCRITO" active students are shown
+    const activeEnrolledStudents = enrolledStudents.filter((r: any) => (r.estado || 'INSCRITO').trim().toUpperCase() !== 'ANULADO');
+
+    const totalInscritos = activeEnrolledStudents.length;
     doc.setFont("helvetica", "normal");
     doc.setTextColor(71, 85, 105);
     doc.text(`Cupos de Asistencia:`, margin + 8, boxY + 30);
@@ -1128,8 +1165,7 @@ export default function App() {
     doc.text(`${totalInscritos} Ocupados / ${selectedVisitForStatus.cupos_max} Totales`, margin + 42, boxY + 30);
 
     // Build Table Rows With Columns: N°, Registro, Nombre, Tipo, Estado, Motivo
-    const formattedData = enrolledStudents.map((reg: any, index: number) => {
-      const isAnulado = (reg.estado || 'INSCRITO') === 'ANULADO';
+    const formattedData = activeEnrolledStudents.map((reg: any, index: number) => {
       const student = reg.student || reg.estudiantes;
       const isExt = !student || !student.registro;
       return {
@@ -1139,7 +1175,7 @@ export default function App() {
         tipo: isExt ? 'Externo' : 'Interno',
         estado: reg.estado || 'INSCRITO',
         motivo: reg.motivo_anulacion || '---',
-        isAnulado: isAnulado
+        isAnulado: false
       };
     });
 
@@ -1468,7 +1504,10 @@ export default function App() {
     doc.setTextColor(15, 23, 42);
     doc.text(`${selectedVisitObj ? `${selectedVisitObj.fecha} | ${selectedVisitObj.horario || 'N/D'}` : 'Consolidado General'}`, margin + 31, boxY + 23);
 
-    const totalInscritos = filteredRegistrations.filter((r: any) => (r.estado || 'INSCRITO') !== 'ANULADO').length;
+    // Filter out canceled or annulled registrations strictly so only "INSCRITO" active students are shown
+    const activeFilteredRegistrations = filteredRegistrations.filter((r: any) => (r.estado || 'INSCRITO').trim().toUpperCase() !== 'ANULADO');
+
+    const totalInscritos = activeFilteredRegistrations.length;
     doc.setFont("helvetica", "normal");
     doc.setTextColor(71, 85, 105);
     doc.text(`Cupos de Asistencia:`, margin + 8, boxY + 30);
@@ -1477,8 +1516,7 @@ export default function App() {
     doc.text(`${totalInscritos} Ocupados ${totalCuposMax ? `/ ${totalCuposMax} Totales` : ''}`, margin + 42, boxY + 30);
 
     // Build Table Rows With Columns: N°, Registro, Nombre, Tipo, Estado, Motivo
-    const formattedData = filteredRegistrations.map((reg: any, index: number) => {
-      const isAnulado = (reg.estado || 'INSCRITO') === 'ANULADO';
+    const formattedData = activeFilteredRegistrations.map((reg: any, index: number) => {
       const student = reg.student || reg.estudiantes;
       const isExt = !student || !student.registro;
       return {
@@ -1488,7 +1526,7 @@ export default function App() {
         tipo: isExt ? 'Externo' : 'Interno',
         estado: reg.estado || 'INSCRITO',
         motivo: reg.motivo_anulacion || '---',
-        isAnulado: isAnulado
+        isAnulado: false
       };
     });
 
@@ -1856,12 +1894,12 @@ export default function App() {
                     <div className="flex items-center gap-5 sm:gap-8 min-w-[250px] py-1 border-y border-slate-100 lg:border-none lg:py-0">
                       {/* Cupos */}
                       <div className="flex flex-col">
-                        <span className="text-xs font-black text-emerald-600 flex items-center gap-1">
-                          <Users size={12} className="text-emerald-600 shrink-0" />
+                        <span className={`text-xs font-black flex items-center gap-1 ${remainingCupos <= 0 ? 'text-rose-600 animate-pulse' : 'text-emerald-600'}`}>
+                          <Users size={12} className={remainingCupos <= 0 ? 'text-rose-600 shrink-0' : 'text-emerald-600 shrink-0'} />
                           {remainingCupos} / {visit.cupos_max} cupos
                         </span>
-                        <span className="text-[10px] text-slate-500 font-bold uppercase mt-0.5 tracking-wider leading-none">
-                          disponibles
+                        <span className={`text-[10px] font-bold uppercase mt-0.5 tracking-wider leading-none ${remainingCupos <= 0 ? 'text-rose-600 font-extrabold' : 'text-slate-500'}`}>
+                          {remainingCupos <= 0 ? 'AGOTADOS' : 'disponibles'}
                         </span>
                       </div>
 
@@ -1906,6 +1944,19 @@ export default function App() {
                         <div className="flex items-center gap-1.5 text-rose-700 font-bold text-xs uppercase tracking-wider py-1 pl-1">
                           <Lock size={12} className="text-rose-500 shrink-0" />
                           <span className="text-[10px] leading-tight text-rose-700 bg-rose-50 px-2.5 py-1 rounded border border-rose-200">Semestre insuficiente (Requerido: Nivel {visit.min_nivel})</span>
+                        </div>
+                      ) : remainingCupos <= 0 ? (
+                        <div className="flex flex-col items-stretch lg:items-end gap-1.5 w-full">
+                          <span className="text-[10px] font-black uppercase text-rose-600 bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-xl flex items-center justify-center gap-1 text-center">
+                            <XCircle size={12} className="text-rose-600 shrink-0" />
+                            Cupos Agotados
+                          </span>
+                          <button 
+                            disabled={true}
+                            className="w-full lg:w-auto px-4 py-2.5 rounded-xl text-xs font-black bg-slate-100 text-slate-400 border border-slate-200/80 cursor-not-allowed uppercase tracking-wider flex items-center justify-center gap-1.5"
+                          >
+                            Cupo Lleno
+                          </button>
                         </div>
                       ) : (
                         <button 
@@ -2796,7 +2847,16 @@ export default function App() {
                          className="h-12 px-4 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-sm text-slate-700 focus:border-emerald-500 transition-all cursor-pointer"
                        >
                          <option value="all">Todas las visitas</option>
-                         {availableVisits.map(v => <option key={v.id} value={v.id}>{v.nombre}</option>)}
+                         {availableVisits.map(v => {
+                           const dateParts = (v.fecha || '').split('-');
+                           const formattedDate = dateParts.length === 3 ? `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}` : v.fecha;
+                           const optionLabel = v.fecha ? `${v.nombre} (${formattedDate})` : v.nombre;
+                           return (
+                             <option key={v.id} value={v.id}>
+                               {optionLabel}
+                             </option>
+                           );
+                         })}
                        </select>
                        <button onClick={exportRegistrationsToExcel} className="h-12 px-5 bg-[#107c41] hover:bg-[#0d6132] text-white rounded-xl font-bold text-sm flex items-center gap-2 hover:scale-[1.02] active:scale-95 transition-all shadow-md border border-transparent">
                          <FileText size={18} /> Exportar Excel
