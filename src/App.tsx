@@ -1164,7 +1164,7 @@ export default function App() {
     doc.setTextColor(15, 23, 42);
     doc.text(`${totalInscritos} Ocupados / ${selectedVisitForStatus.cupos_max} Totales`, margin + 42, boxY + 30);
 
-    // Build Table Rows With Columns: N°, Registro, Nombre, Tipo, Estado, Motivo
+    // Build Table Rows With Columns: N°, Registro, Nombre, Tipo, REF, Estado
     const formattedData = activeEnrolledStudents.map((reg: any, index: number) => {
       const student = reg.student || reg.estudiantes;
       const isExt = !student || !student.registro;
@@ -1173,20 +1173,20 @@ export default function App() {
         registro: reg.estudiante_registro || '---',
         nombre: reg.student?.nombre || reg.nombre_estudiante || '---',
         tipo: isExt ? 'Externo' : 'Interno',
+        ref: reg.contacto_referencia || '---',
         estado: reg.estado || 'INSCRITO',
-        motivo: reg.motivo_anulacion || '---',
         isAnulado: false
       };
     });
 
-    const headers = [['N°', 'Registro/Ticket', 'Nombre del Estudiante', 'Tipo', 'Estado', 'Motivo de Anulación']];
+    const headers = [['N°', 'Registro/Ticket', 'Nombre del Estudiante', 'Tipo', 'REF/Referencia', 'Estado']];
     const bodyRows = formattedData.map(r => [
       r.num,
       r.registro,
       r.nombre,
       r.tipo,
-      r.estado,
-      r.motivo
+      r.ref,
+      r.estado
     ]);
 
     autoTable(doc, {
@@ -1200,6 +1200,14 @@ export default function App() {
         font: "helvetica",
         lineColor: [226, 232, 240], // #e2e8f0 fine lines
         lineWidth: 0.1
+      },
+      columnStyles: {
+        0: { cellWidth: 10, halign: 'center' },
+        1: { cellWidth: 28 },
+        2: { cellWidth: 'auto' },
+        3: { cellWidth: 18, halign: 'center' },
+        4: { cellWidth: 28 },
+        5: { cellWidth: 20, halign: 'center' }
       },
       headStyles: {
         fillColor: [4, 120, 87], // #047857 esmeralda oscuro
@@ -1250,7 +1258,7 @@ export default function App() {
       ["Fecha / Hora de Visita:", `${selectedVisitForStatus.fecha} | ${selectedVisitForStatus.horario || 'N/D'}`],
       ["Ubicación / Planta:", selectedVisitForStatus.descripcion || 'No especificada'],
       [], // Blank separator row
-      ["N°", "Registro / Ticket", "Nombre Completo", "Tipo de Inscripción", "Estado", "Observación / Motivo"] // Table Header at Row 6
+      ["N°", "Registro / Ticket", "Nombre Completo", "Tipo de Inscripción", "Número de Referencia (REF)", "Estado", "Observación / Motivo"] // Table Header at Row 6
     ];
 
     const studentRows = enrolledStudents.map((reg: any, index: number) => {
@@ -1261,6 +1269,7 @@ export default function App() {
         reg.estudiante_registro || '---',
         reg.student?.nombre || reg.nombre_estudiante || '---',
         isExt ? 'Externo' : 'Interno',
+        reg.contacto_referencia || '---',
         reg.estado || 'INSCRITO',
         reg.motivo_anulacion || '---'
       ];
@@ -1272,7 +1281,7 @@ export default function App() {
     const ws = XLSX.utils.aoa_to_sheet(finalAoa);
 
     // Apply auto-fit column widths
-    const colWidths = [6, 22, 35, 18, 18, 35]; // minimum lengths
+    const colWidths = [6, 22, 35, 18, 25, 18, 35]; // minimum lengths
     finalAoa.forEach((row) => {
       row.forEach((value, colIndex) => {
         if (colIndex < colWidths.length) {
@@ -1515,7 +1524,7 @@ export default function App() {
     doc.setTextColor(15, 23, 42);
     doc.text(`${totalInscritos} Ocupados ${totalCuposMax ? `/ ${totalCuposMax} Totales` : ''}`, margin + 42, boxY + 30);
 
-    // Build Table Rows With Columns: N°, Registro, Nombre, Tipo, Estado, Motivo
+    // Build Table Rows With Columns: N°, Registro, Nombre, Tipo, REF, Estado
     const formattedData = activeFilteredRegistrations.map((reg: any, index: number) => {
       const student = reg.student || reg.estudiantes;
       const isExt = !student || !student.registro;
@@ -1524,20 +1533,20 @@ export default function App() {
         registro: reg.estudiante_registro || '---',
         nombre: reg.nombre_estudiante || student?.nombre || '---',
         tipo: isExt ? 'Externo' : 'Interno',
+        ref: reg.contacto_referencia || '---',
         estado: reg.estado || 'INSCRITO',
-        motivo: reg.motivo_anulacion || '---',
         isAnulado: false
       };
     });
 
-    const headers = [['N°', 'Registro/Ticket', 'Nombre del Estudiante', 'Tipo', 'Estado', 'Motivo de Anulación']];
+    const headers = [['N°', 'Registro/Ticket', 'Nombre del Estudiante', 'Tipo', 'REF/Referencia', 'Estado']];
     const bodyRows = formattedData.map(r => [
       r.num,
       r.registro,
       r.nombre,
       r.tipo,
-      r.estado,
-      r.motivo
+      r.ref,
+      r.estado
     ]);
 
     autoTable(doc, {
@@ -1551,6 +1560,14 @@ export default function App() {
         font: "helvetica",
         lineColor: [226, 232, 240], // Fine division lines
         lineWidth: 0.1
+      },
+      columnStyles: {
+        0: { cellWidth: 10, halign: 'center' },
+        1: { cellWidth: 28 },
+        2: { cellWidth: 'auto' },
+        3: { cellWidth: 18, halign: 'center' },
+        4: { cellWidth: 28 },
+        5: { cellWidth: 20, halign: 'center' }
       },
       headStyles: {
         fillColor: [4, 120, 87], // #047857 esmeralda oscuro
@@ -1603,7 +1620,7 @@ export default function App() {
       ["Empresa / Visita:", visitName],
       ["Fecha / Ubicación:", `${visitDate} | Planta/Lugar: ${visitLocation}`],
       [], // Blank separator row
-      ["N°", "Registro / Ticket", "Nombre Completo", "Tipo de Inscripción", "Estado", "Observación / Motivo"] // Table Header at Row 6
+      ["N°", "Registro / Ticket", "Nombre Completo", "Tipo de Inscripción", "Número de Referencia (REF)", "Estado", "Observación / Motivo"] // Table Header at Row 6
     ];
 
     const studentRows = filteredRegistrations.map((reg: any, index: number) => {
@@ -1614,6 +1631,7 @@ export default function App() {
         reg.estudiante_registro || '---',
         reg.nombre_estudiante || student?.nombre || '---',
         isExt ? 'Externo' : 'Interno',
+        reg.contacto_referencia || '---',
         reg.estado || 'INSCRITO',
         reg.motivo_anulacion || '---'
       ];
@@ -1624,7 +1642,7 @@ export default function App() {
     const ws = XLSX.utils.aoa_to_sheet(finalAoa);
 
     // Apply auto-fit column widths
-    const colWidths = [6, 22, 35, 18, 18, 35]; // minimum lengths
+    const colWidths = [6, 22, 35, 18, 25, 18, 35]; // minimum lengths
     finalAoa.forEach((row) => {
       row.forEach((value, colIndex) => {
         if (colIndex < colWidths.length) {
