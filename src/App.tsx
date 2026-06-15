@@ -138,7 +138,7 @@ export default function App() {
     };
   }, []);
 
-  const [userRole, setUserRole] = useState<'guest' | 'student' | 'admin'>(() => {
+  const [userRole, setUserRole] = useState<'guest' | 'student' | 'admin' | 'operator'>(() => {
     return (localStorage.getItem('ceic_userRole') as any) || 'guest';
   });
   const [loginMode, setLoginMode] = useState<'select' | 'student' | 'admin'>(() => {
@@ -152,6 +152,11 @@ export default function App() {
       return null;
     }
   });
+  
+  // Operator Access States
+  const [showOperatorModal, setShowOperatorModal] = useState(false);
+  const [operatorPassword, setOperatorPassword] = useState('');
+  const [operatorError, setOperatorError] = useState('');
   
   // Login State
   const [loginId, setLoginId] = useState(''); // Registro for student
@@ -188,7 +193,7 @@ export default function App() {
 
   // Route Protection (Session Check)
   useEffect(() => {
-    if (userRole && !['guest', 'student', 'admin'].includes(userRole)) {
+    if (userRole && !['guest', 'student', 'admin', 'operator'].includes(userRole)) {
       handleLogout();
     }
   }, [userRole]);
@@ -1751,9 +1756,9 @@ export default function App() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="max-w-2xl w-full grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10"
+              className="max-w-4xl w-full grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10"
             >
-              <div className="md:col-span-2 flex flex-col items-center mb-6">
+              <div className="md:col-span-3 flex flex-col items-center mb-6">
                 <div className="p-4 bg-emerald-50 rounded-3xl shadow-sm mb-6 border border-emerald-100">
                   <Building2 className="w-12 h-12 text-emerald-700" />
                 </div>
@@ -1766,30 +1771,46 @@ export default function App() {
                 whileHover={{ scale: 1.05, borderColor: 'rgba(16, 185, 129, 0.4)' }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setLoginMode('student')}
-                className="bg-white border p-10 rounded-[2.5rem] flex flex-col items-center gap-6 hover:bg-slate-50 transition-all group shadow-sm"
+                className="bg-white border p-8 rounded-[2.5rem] flex flex-col items-center gap-6 hover:bg-slate-50 transition-all group shadow-sm justify-between min-h-[300px]"
               >
-                <div className="w-24 h-24 rounded-full bg-emerald-50 flex items-center justify-center shadow-inner group-hover:bg-emerald-100 transition-colors border border-emerald-100">
-                  <GraduationCap className="w-12 h-12 text-emerald-700" />
+                <div className="w-20 h-20 rounded-full bg-emerald-50 flex items-center justify-center shadow-inner group-hover:bg-emerald-100 transition-colors border border-emerald-100">
+                  <GraduationCap className="w-10 h-10 text-emerald-700" />
                 </div>
                 <div className="text-center">
-                  <h2 className="text-2xl font-black mb-2 text-[#111827] group-hover:text-emerald-700 transition-colors">Estudiantes</h2>
-                  <p className="text-[#6B7280] text-sm font-medium">Inscripción y gestión de visitas</p>
+                  <h2 className="text-xl font-black mb-2 text-[#111827] group-hover:text-emerald-700 transition-colors">Estudiantes</h2>
+                  <p className="text-[#6B7280] text-xs font-medium px-2">Inscripción y gestión de visitas</p>
                 </div>
               </motion.button>
 
               <motion.button 
                 initial={{ borderColor: 'rgba(226, 232, 240, 1)' }}
-                whileHover={{ scale: 1.05, borderColor: 'rgba(16, 185, 129, 0.4)' }}
+                whileHover={{ scale: 1.05, borderColor: 'rgba(13, 148, 136, 0.4)' }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => setLoginMode('admin')}
-                className="bg-white border p-10 rounded-[2.5rem] flex flex-col items-center gap-6 hover:bg-slate-50 transition-all group shadow-sm"
+                onClick={() => setShowOperatorModal(true)}
+                className="bg-white border p-8 rounded-[2.5rem] flex flex-col items-center gap-6 hover:bg-slate-50 transition-all group shadow-sm justify-between min-h-[300px]"
               >
-                <div className="w-24 h-24 rounded-full bg-amber-50 flex items-center justify-center shadow-inner group-hover:bg-amber-100 transition-colors border border-amber-100">
-                  <ShieldCheck className="w-12 h-12 text-amber-600" />
+                <div className="w-20 h-20 rounded-full bg-teal-50 flex items-center justify-center shadow-inner group-hover:bg-teal-100 transition-colors border border-teal-100 items-center justify-center">
+                  <QrCode className="w-10 h-10 text-teal-700" />
                 </div>
                 <div className="text-center">
-                  <h2 className="text-2xl font-black mb-2 text-[#111827] group-hover:text-amber-650 transition-colors">Administración</h2>
-                  <p className="text-[#6B7280] text-sm font-medium">Panel de control y reportes</p>
+                  <h2 className="text-xl font-black mb-2 text-[#111827] group-hover:text-teal-700 transition-colors">Asistencia QR</h2>
+                  <p className="text-[#6B7280] text-xs font-medium px-2">Ingreso rápido para encargados de visitas técnicas</p>
+                </div>
+              </motion.button>
+
+              <motion.button 
+                initial={{ borderColor: 'rgba(226, 232, 240, 1)' }}
+                whileHover={{ scale: 1.05, borderColor: 'rgba(245, 158, 11, 0.4)' }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setLoginMode('admin')}
+                className="bg-white border p-8 rounded-[2.5rem] flex flex-col items-center gap-6 hover:bg-slate-50 transition-all group shadow-sm justify-between min-h-[300px]"
+              >
+                <div className="w-20 h-20 rounded-full bg-amber-50 flex items-center justify-center shadow-inner group-hover:bg-amber-100 transition-colors border border-amber-100">
+                  <ShieldCheck className="w-10 h-10 text-amber-600" />
+                </div>
+                <div className="text-center">
+                  <h2 className="text-xl font-black mb-2 text-[#111827] group-hover:text-amber-655 transition-colors">Administración</h2>
+                  <p className="text-[#6B7280] text-xs font-medium px-2">Panel de control y reportes</p>
                 </div>
               </motion.button>
             </motion.div>
@@ -1895,6 +1916,101 @@ export default function App() {
                 </button>
               </form>
             </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Password Modal for Quick Operator Access */}
+        <AnimatePresence>
+          {showOperatorModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              {/* Overlay */}
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => {
+                  setShowOperatorModal(false);
+                  setOperatorPassword('');
+                  setOperatorError('');
+                }}
+                className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+              />
+              
+              {/* Modal Card */}
+              <motion.div 
+                initial={{ scale: 0.95, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.95, opacity: 0, y: 20 }}
+                className="bg-white rounded-[2.5rem] w-full max-w-md p-8 shadow-2xl border border-slate-150 relative z-10 text-slate-800"
+              >
+                <div className="flex flex-col items-center text-center">
+                  <div className="p-4 bg-teal-50 rounded-2xl border border-teal-100 mb-4 text-teal-600 flex items-center justify-center">
+                    <QrCode size={36} />
+                  </div>
+                  <h3 className="text-2xl font-black text-[#111827]">Acceso Encargados</h3>
+                  <p className="text-[#6B7280] text-sm font-medium mt-1">Ingrese la contraseña rápida de asistencia</p>
+                </div>
+
+                <form 
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (operatorPassword === 'C1V1L2026_*') {
+                      setUserRole('operator');
+                      setShowOperatorModal(false);
+                      setOperatorPassword('');
+                      setOperatorError('');
+                    } else {
+                      setOperatorError('Contraseña incorrecta. Intente nuevamente.');
+                    }
+                  }}
+                  className="mt-6 space-y-4"
+                >
+                  <div>
+                    <label className="text-[10px] font-black uppercase text-teal-700 tracking-widest pl-2 mb-2 block">
+                      Contraseña de Acceso Rápido
+                    </label>
+                    <div className="relative">
+                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+                      <input 
+                        type="password" 
+                        value={operatorPassword}
+                        onChange={(e) => setOperatorPassword(e.target.value)}
+                        placeholder="••••••••••••"
+                        className="w-full h-14 bg-slate-50 border-2 border-slate-200 focus:border-teal-600 focus:bg-white text-[#111827] placeholder:text-slate-400 rounded-2xl pl-12 outline-none transition-all font-bold shadow-sm"
+                        required
+                        autoFocus
+                      />
+                    </div>
+                  </div>
+
+                  {operatorError && (
+                    <p className="text-rose-700 text-xs font-black text-center bg-rose-50 p-3 rounded-xl border border-rose-200">
+                      {operatorError}
+                    </p>
+                  )}
+
+                  <div className="flex gap-3 pt-2">
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        setShowOperatorModal(false);
+                        setOperatorPassword('');
+                        setOperatorError('');
+                      }}
+                      className="flex-1 h-14 bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all rounded-2xl font-bold text-sm"
+                    >
+                      Cancelar
+                    </button>
+                    <button 
+                      type="submit"
+                      className="flex-1 h-14 bg-teal-600 text-white hover:bg-teal-700 transition-all rounded-2xl font-black text-sm shadow-md"
+                    >
+                      Ingresar
+                    </button>
+                  </div>
+                </form>
+              </motion.div>
+            </div>
           )}
         </AnimatePresence>
       </div>
@@ -2381,6 +2497,55 @@ export default function App() {
     );
   }
 
+  if (userRole === 'operator') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#0c2e25] via-[#051e18] to-[#041511] font-sans text-white relative overflow-hidden flex flex-col">
+        <CEICBackground />
+        
+        {/* Header bar */}
+        <header className="relative z-10 bg-[#011a15]/80 backdrop-blur-md border-b border-emerald-500/10 px-6 py-4 flex items-center justify-between shadow-lg">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 bg-gradient-to-br from-teal-400 to-emerald-600 border border-teal-300/20 text-teal-950 rounded-xl shadow-md">
+              <QrCode size={22} />
+            </div>
+            <div>
+              <h1 className="text-md font-black tracking-tight text-white uppercase leading-none">ASISTENCIA QR</h1>
+              <span className="text-[9px] font-bold text-teal-400 tracking-[0.1em] uppercase">Control Solo Registro</span>
+            </div>
+          </div>
+          
+          <button 
+            onClick={handleLogout} 
+            className="flex items-center gap-2 px-4 py-2 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 hover:border-rose-500/45 rounded-xl font-black text-xs text-rose-400 uppercase tracking-wider transition-all active:scale-95 cursor-pointer shadow-sm shadow-rose-950/25"
+          >
+            <LogOut size={16} /> Salir
+          </button>
+        </header>
+
+        {/* Content body containing only the AsistenciaVisitas module */}
+        <main className="flex-1 p-6 z-10 overflow-y-auto max-w-5xl w-full mx-auto">
+          <div className="space-y-6">
+            <div className="bg-emerald-950/20 border border-emerald-500/10 p-5 rounded-3xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                  Panel de Registro de Asistencia
+                </h2>
+                <p className="text-xs text-emerald-300/60 font-medium mt-1">
+                  Use la cámara de su dispositivo o ingrese el registro manualmente para marcar el ingreso de los estudiantes a las visitas técnicas oficiales del congreso.
+                </p>
+              </div>
+              <div className="px-3.5 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-[10px] font-black text-emerald-400 uppercase tracking-wider">
+                Modo Restringido
+              </div>
+            </div>
+
+            <AsistenciaVisitas visits={availableVisits} onSupabaseError={handleSupabaseError} />
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   // --- Admin View ---
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-950 via-emerald-900 to-teal-950 font-sans text-white relative overflow-hidden">
@@ -2403,7 +2568,6 @@ export default function App() {
               {[
                 { id: 'registrations', label: 'Inscritos', icon: ClipboardList },
                 { id: 'visitas', label: 'Gestión de Visitas', icon: Calendar },
-                { id: 'qr_asistencia', label: 'Asistencia QR', icon: QrCode },
                 { id: 'validator', label: 'Validador Estudiantil', icon: Search },
                 { id: 'stats', label: 'Resumen', icon: Filter },
                 { id: 'sync', label: 'Sync & Import', icon: RefreshCw },
