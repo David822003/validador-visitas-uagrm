@@ -1100,9 +1100,36 @@ export default function App() {
     doc.save(`reporte_visitas_tecnicas_${fileSuffix}.pdf`);
   };
 
-  const exportToPDF = () => {
+  const exportToPDF = async () => {
     if (!selectedVisitForStatus) return;
     
+    // Filter out canceled or annulled registrations strictly so only "INSCRITO" active students are shown
+    const activeEnrolledStudents = enrolledStudents.filter((r: any) => (r.estado || 'INSCRITO').trim().toUpperCase() !== 'ANULADO');
+
+    // Fetch corresponding celular_whatsapp from 'inscripciones_congreso'
+    let phonesMap: Record<string, string> = {};
+    
+    try {
+      const { data: phoneData, error: phoneErr } = await supabase
+        .from('inscripciones_congreso')
+        .select('registro_universitario, id_ticket, celular_whatsapp')
+        .limit(2000);
+      
+      if (!phoneErr && phoneData) {
+        phoneData.forEach((row: any) => {
+          const phone = (row.celular_whatsapp || '').trim() || '---';
+          if (row.registro_universitario) {
+            phonesMap[row.registro_universitario.trim().toLowerCase()] = phone;
+          }
+          if (row.id_ticket) {
+            phonesMap[row.id_ticket.trim().toLowerCase()] = phone;
+          }
+        });
+      }
+    } catch (err) {
+      console.error("Error fetching phone numbers from inscripciones_congreso:", err);
+    }
+
     // Create new PDF layout (A4 vertical)
     const doc = new jsPDF('p', 'mm', 'a4');
     const pageWidth = doc.internal.pageSize.getWidth();
@@ -1153,9 +1180,6 @@ export default function App() {
     doc.setTextColor(15, 23, 42);
     doc.text(`${selectedVisitForStatus.fecha} | ${selectedVisitForStatus.horario || 'N/D'}`, margin + 31, boxY + 23);
 
-    // Filter out canceled or annulled registrations strictly so only "INSCRITO" active students are shown
-    const activeEnrolledStudents = enrolledStudents.filter((r: any) => (r.estado || 'INSCRITO').trim().toUpperCase() !== 'ANULADO');
-
     const totalInscritos = activeEnrolledStudents.length;
     doc.setFont("helvetica", "normal");
     doc.setTextColor(71, 85, 105);
@@ -1164,22 +1188,36 @@ export default function App() {
     doc.setTextColor(15, 23, 42);
     doc.text(`${totalInscritos} Ocupados / ${selectedVisitForStatus.cupos_max} Totales`, margin + 42, boxY + 30);
 
-    // Build Table Rows With Columns: N°, Registro, Nombre, Tipo, REF, Estado
+    // Build Table Rows With Columns: N°, Registro, Nombre, Tipo, Celular / WhatsApp, Estado
     const formattedData = activeEnrolledStudents.map((reg: any, index: number) => {
       const student = reg.student || reg.estudiantes;
       const isExt = !student || !student.registro;
+      const studentReg = (reg.estudiante_registro || '').trim().toLowerCase();
+      
+      let phone = phonesMap[studentReg] || '---';
+      
+      // Fallback: If no match, clean up and do fuzzy match on keys
+      if (phone === '---' && studentReg) {
+        const foundKey = Object.keys(phonesMap).find(k => {
+          return k === studentReg || k.includes(studentReg) || studentReg.includes(k);
+        });
+        if (foundKey) {
+          phone = phonesMap[foundKey];
+        }
+      }
+
       return {
         num: index + 1,
         registro: reg.estudiante_registro || '---',
         nombre: reg.student?.nombre || reg.nombre_estudiante || '---',
         tipo: isExt ? 'Externo' : 'Interno',
-        ref: reg.contacto_referencia || '---',
+        ref: phone,
         estado: reg.estado || 'INSCRITO',
         isAnulado: false
       };
     });
 
-    const headers = [['N°', 'Registro/Ticket', 'Nombre del Estudiante', 'Tipo', 'REF/Referencia', 'Estado']];
+    const headers = [['N°', 'Registro/Ticket', 'Nombre del Estudiante', 'Tipo', 'Celular / WhatsApp', 'Estado']];
     const bodyRows = formattedData.map(r => [
       r.num,
       r.registro,
@@ -1195,19 +1233,19 @@ export default function App() {
       body: bodyRows,
       margin: { left: margin, right: margin },
       styles: {
-        fontSize: 9,
-        cellPadding: 4.5,
+        fontSize: 8.5,
+        cellPadding: { top: 1.5, bottom: 1.5, left: 1.8, right: 1.8 }, // Extremely compact padding for clean design
         font: "helvetica",
         lineColor: [226, 232, 240], // #e2e8f0 fine lines
         lineWidth: 0.1
       },
       columnStyles: {
-        0: { cellWidth: 10, halign: 'center' },
-        1: { cellWidth: 28 },
+        0: { cellWidth: 8, halign: 'center' },
+        1: { cellWidth: 26 },
         2: { cellWidth: 'auto' },
-        3: { cellWidth: 18, halign: 'center' },
-        4: { cellWidth: 28 },
-        5: { cellWidth: 20, halign: 'center' }
+        3: { cellWidth: 20, halign: 'center' },
+        4: { cellWidth: 32, halign: 'center' },
+        5: { cellWidth: 24, halign: 'center' }
       },
       headStyles: {
         fillColor: [4, 120, 87], // #047857 esmeralda oscuro
@@ -1456,7 +1494,34 @@ export default function App() {
     }
   };
 
-  const exportRegistrationsToPDF = () => {
+  const exportRegistrationsToPDF = async () => {
+    // Filter out canceled or annulled registrations strictly so only "INSCRITO" active students are shown
+    const activeFilteredRegistrations = filteredRegistrations.filter((r: any) => (r.estado || 'INSCRITO').trim().toUpperCase() !== 'ANULADO');
+
+    // Fetch corresponding celular_whatsapp from 'inscripciones_congreso'
+    let phonesMap: Record<string, string> = {};
+    
+    try {
+      const { data: phoneData, error: phoneErr } = await supabase
+        .from('inscripciones_congreso')
+        .select('registro_universitario, id_ticket, celular_whatsapp')
+        .limit(2000);
+      
+      if (!phoneErr && phoneData) {
+        phoneData.forEach((row: any) => {
+          const phone = (row.celular_whatsapp || '').trim() || '---';
+          if (row.registro_universitario) {
+            phonesMap[row.registro_universitario.trim().toLowerCase()] = phone;
+          }
+          if (row.id_ticket) {
+            phonesMap[row.id_ticket.trim().toLowerCase()] = phone;
+          }
+        });
+      }
+    } catch (err) {
+      console.error("Error fetching phone numbers from inscripciones_congreso:", err);
+    }
+
     // Create new PDF layout (A4 vertical)
     const doc = new jsPDF('p', 'mm', 'a4');
     const pageWidth = doc.internal.pageSize.getWidth();
@@ -1513,9 +1578,6 @@ export default function App() {
     doc.setTextColor(15, 23, 42);
     doc.text(`${selectedVisitObj ? `${selectedVisitObj.fecha} | ${selectedVisitObj.horario || 'N/D'}` : 'Consolidado General'}`, margin + 31, boxY + 23);
 
-    // Filter out canceled or annulled registrations strictly so only "INSCRITO" active students are shown
-    const activeFilteredRegistrations = filteredRegistrations.filter((r: any) => (r.estado || 'INSCRITO').trim().toUpperCase() !== 'ANULADO');
-
     const totalInscritos = activeFilteredRegistrations.length;
     doc.setFont("helvetica", "normal");
     doc.setTextColor(71, 85, 105);
@@ -1524,22 +1586,36 @@ export default function App() {
     doc.setTextColor(15, 23, 42);
     doc.text(`${totalInscritos} Ocupados ${totalCuposMax ? `/ ${totalCuposMax} Totales` : ''}`, margin + 42, boxY + 30);
 
-    // Build Table Rows With Columns: N°, Registro, Nombre, Tipo, REF, Estado
+    // Build Table Rows With Columns: N°, Registro, Nombre, Tipo, Celular / WhatsApp, Estado
     const formattedData = activeFilteredRegistrations.map((reg: any, index: number) => {
       const student = reg.student || reg.estudiantes;
       const isExt = !student || !student.registro;
+      const studentReg = (reg.estudiante_registro || '').trim().toLowerCase();
+      
+      let phone = phonesMap[studentReg] || '---';
+      
+      // Fallback: If no match, clean up and do fuzzy match on keys
+      if (phone === '---' && studentReg) {
+        const foundKey = Object.keys(phonesMap).find(k => {
+          return k === studentReg || k.includes(studentReg) || studentReg.includes(k);
+        });
+        if (foundKey) {
+          phone = phonesMap[foundKey];
+        }
+      }
+
       return {
         num: index + 1,
         registro: reg.estudiante_registro || '---',
         nombre: reg.nombre_estudiante || student?.nombre || '---',
         tipo: isExt ? 'Externo' : 'Interno',
-        ref: reg.contacto_referencia || '---',
+        ref: phone,
         estado: reg.estado || 'INSCRITO',
         isAnulado: false
       };
     });
 
-    const headers = [['N°', 'Registro/Ticket', 'Nombre del Estudiante', 'Tipo', 'REF/Referencia', 'Estado']];
+    const headers = [['N°', 'Registro/Ticket', 'Nombre del Estudiante', 'Tipo', 'Celular / WhatsApp', 'Estado']];
     const bodyRows = formattedData.map(r => [
       r.num,
       r.registro,
@@ -1555,19 +1631,19 @@ export default function App() {
       body: bodyRows,
       margin: { left: margin, right: margin },
       styles: {
-        fontSize: 9,
-        cellPadding: 4.5, // Padding para que el texto respire
+        fontSize: 8.5,
+        cellPadding: { top: 1.5, bottom: 1.5, left: 1.8, right: 1.8 }, // Extremely compact padding for clean design
         font: "helvetica",
         lineColor: [226, 232, 240], // Fine division lines
         lineWidth: 0.1
       },
       columnStyles: {
-        0: { cellWidth: 10, halign: 'center' },
-        1: { cellWidth: 28 },
+        0: { cellWidth: 8, halign: 'center' },
+        1: { cellWidth: 26 },
         2: { cellWidth: 'auto' },
-        3: { cellWidth: 18, halign: 'center' },
-        4: { cellWidth: 28 },
-        5: { cellWidth: 20, halign: 'center' }
+        3: { cellWidth: 20, halign: 'center' },
+        4: { cellWidth: 32, halign: 'center' },
+        5: { cellWidth: 24, halign: 'center' }
       },
       headStyles: {
         fillColor: [4, 120, 87], // #047857 esmeralda oscuro
