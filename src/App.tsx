@@ -465,7 +465,8 @@ export default function App() {
       const trimmed_ticket = (match.id_ticket || '').trim();
       const final_registro = trimmed_registro || trimmed_ticket || cleanInput;
 
-      let fetchedNiv: number | undefined = undefined;
+      let finalNivel: number = 10;
+      let finalSemestreActivo: string = '10';
       let isExternal = true;
 
       // Detect if user has a UAGRM/internal registration type
@@ -473,16 +474,104 @@ export default function App() {
         isExternal = false;
       }
 
+      // PASO 3: PARSEO Y TRADUCCIÓN DE TEXTO A NÚMERO
+      function parsearSemestreDelCongreso(semestreTexto: string): number {
+        if (!semestreTexto) return 10; // Valor seguro por defecto si está vacío
+        const texto = semestreTexto.toLowerCase().trim();
+        
+        // Si es egresado o graduado, le damos nivel máximo para que acceda a todas las visitas
+        if (texto.includes('egresado') || texto.includes('graduado') || texto.includes('externo')) {
+          return 10; 
+        }
+        
+        // Extraer los dígitos numéricos (ej. "8vo Semestre" -> 8, "10mo Semestre" -> 10)
+        const coincidencia = texto.match(/\d+/);
+        return coincidencia ? parseInt(coincidencia[0], 10) : 10;
+      }
+
+      const parsedCongresSem = parsearSemestreDelCongreso(match.semestre);
+
       if (final_registro) {
+        // PASO 1: VERIFICACIÓN EN LA TABLA MAESTRA
         const { data: localStudentData, error: localErr } = await supabase
           .from('estudiantes')
-          .select('niv')
+          .select('id, niv, semestre_activo')
           .eq('registro', final_registro)
           .maybeSingle();
-        
+
+        // PASO 2: CONDICIONAL DE SEMESTRE (EL NÚCLEO DEL BUG)
         if (!localErr && localStudentData) {
-          fetchedNiv = localStudentData.niv;
+          // El estudiante ya existe en la tabla estudiantes.
           isExternal = false;
+          
+          let parsedLvl = 1;
+          if (localStudentData.niv !== undefined && localStudentData.niv !== null) {
+            parsedLvl = Number(localStudentData.niv);
+          } else if (localStudentData.semestre_activo) {
+            const cleanSem = String(localStudentData.semestre_activo).trim();
+            if (cleanSem.includes('-')) {
+              parsedLvl = parseInt(cleanSem.split('-')[0], 10) || 1;
+            } else {
+              parsedLvl = parseInt(cleanSem, 10) || 1;
+            }
+          }
+
+          // Reparación activa si tiene un semestre incorrecto (por ejemplo, autoguardado antes como "Egresado/Externo" o nivel 1)
+          // O si el semestre del congreso ("10mo Semestre", etc.) indica un nivel más alto.
+          const isAutoregisteredWithLowLevel = (localStudentData.semestre_activo === 'Egresado/Externo' && parsedLvl === 1);
+          const needsFix = isAutoregisteredWithLowLevel || parsedCongresSem > parsedLvl;
+
+          if (needsFix) {
+            finalNivel = parsedCongresSem;
+            finalSemestreActivo = String(parsedCongresSem);
+            
+            // Corrige de forma transparente la base de datos
+            await supabase
+              .from('estudiantes')
+              .update({
+                semestre_activo: finalSemestreActivo,
+                niv: finalNivel
+              })
+              .eq('id', localStudentData.id);
+            console.log("Auto-registration fix: updated existing record with correct level:", finalNivel);
+          } else {
+            // Respeta el nivel de la tabla estudiantes si ya es correcto o es mayor
+            finalNivel = parsedLvl;
+            finalSemestreActivo = localStudentData.semestre_activo || String(parsedLvl);
+          }
+        } else {
+          // El estudiante NO existe (Egresado/Externo nuevo)
+          finalNivel = parsedCongresSem;
+          finalSemestreActivo = String(parsedCongresSem);
+
+          // AUTO-REGISTRO (UPSERT) DE EGRESADOS/EXTERNOS
+          const isUagrm = match.tipo_inscripcion && match.tipo_inscripcion.toLowerCase().includes('uagrm');
+          
+          const studentRecord = {
+            registro: final_registro,
+            nombre: (match.nombre_completo || match.nombre || 'Asistente').trim().toUpperCase(),
+            carrera: match.carrera || 'Ingeniería Civil',
+            semestre_activo: finalSemestreActivo,
+            niv: finalNivel,
+            ci: (match.cedula_identidad || '').trim(),
+            obs: trimmed_ticket || '',
+            correo: match.correo_electronico || '',
+            celular: match.celular_whatsapp || '',
+            lugar: match.lugar || ''
+          };
+
+          const { error: insertErr } = await supabase
+            .from('estudiantes')
+            .upsert(studentRecord, { onConflict: 'registro' });
+          
+          if (insertErr) {
+            console.error("Auto-registration in estudiantes table failed:", insertErr);
+          } else {
+            console.log("Auto-registration in estudiantes table succeeded for:", final_registro, "assigned level:", finalNivel);
+            if (isUagrm) {
+              isExternal = false;
+            }
+          }
         }
       }
 
@@ -491,12 +580,12 @@ export default function App() {
         registro: final_registro,
         nombre: match.nombre || match.nombre_completo || 'Asistente',
         carrera: match.carrera || 'Ingeniería Civil',
-        semestre_activo: match.semestre || match.semestre_activo || '1-2025',
+        semestre_activo: finalSemestreActivo,
         ci: (match.cedula_identidad || '').trim(),
         obs: trimmed_ticket || '',
         lugar: match.lugar || '',
-        nivel: match.nivel || match.nivel_semestre || match.niv || 1,
-        niv: fetchedNiv,
+        nivel: finalNivel,
+        niv: finalNivel,
         isExternal: isExternal
       };
 
