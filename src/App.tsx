@@ -1111,28 +1111,34 @@ export default function App() {
     // Filter out canceled or annulled registrations strictly so only "INSCRITO" active students are shown
     const activeEnrolledStudents = enrolledStudents.filter((r: any) => (r.estado || 'INSCRITO').trim().toUpperCase() !== 'ANULADO');
 
-    // Fetch corresponding celular_whatsapp from 'inscripciones_congreso'
+    // Fetch corresponding celular_whatsapp and cedula_identidad from 'inscripciones_congreso'
     let phonesMap: Record<string, string> = {};
+    let ciMap: Record<string, string> = {};
     
     try {
       const { data: phoneData, error: phoneErr } = await supabase
         .from('inscripciones_congreso')
-        .select('registro_universitario, id_ticket, celular_whatsapp')
+        .select('registro_universitario, id_ticket, celular_whatsapp, cedula_identidad')
         .limit(2000);
       
       if (!phoneErr && phoneData) {
         phoneData.forEach((row: any) => {
           const phone = (row.celular_whatsapp || '').trim() || '---';
+          const rCi = (row.cedula_identidad || '').trim() || '---';
           if (row.registro_universitario) {
-            phonesMap[row.registro_universitario.trim().toLowerCase()] = phone;
+            const key = row.registro_universitario.trim().toLowerCase();
+            phonesMap[key] = phone;
+            ciMap[key] = rCi;
           }
           if (row.id_ticket) {
-            phonesMap[row.id_ticket.trim().toLowerCase()] = phone;
+            const key = row.id_ticket.trim().toLowerCase();
+            phonesMap[key] = phone;
+            ciMap[key] = rCi;
           }
         });
       }
     } catch (err) {
-      console.error("Error fetching phone numbers from inscripciones_congreso:", err);
+      console.error("Error fetching phone numbers and CI from inscripciones_congreso:", err);
     }
 
     // Create new PDF layout (A4 vertical)
@@ -1193,13 +1199,14 @@ export default function App() {
     doc.setTextColor(15, 23, 42);
     doc.text(`${totalInscritos} Ocupados / ${selectedVisitForStatus.cupos_max} Totales`, margin + 42, boxY + 30);
 
-    // Build Table Rows With Columns: N°, Registro, Nombre, Tipo, Celular / WhatsApp, Estado
+    // Build Table Rows With Columns: N°, Registro, Nombre, C.I., Tipo, Celular / WhatsApp, Estado
     const formattedData = activeEnrolledStudents.map((reg: any, index: number) => {
       const student = reg.student || reg.estudiantes;
       const isExt = !student || !student.registro;
       const studentReg = (reg.estudiante_registro || '').trim().toLowerCase();
       
       let phone = phonesMap[studentReg] || '---';
+      let ci = student?.ci || ciMap[studentReg] || '---';
       
       // Fallback: If no match, clean up and do fuzzy match on keys
       if (phone === '---' && studentReg) {
@@ -1211,10 +1218,20 @@ export default function App() {
         }
       }
 
+      if (ci === '---' && studentReg) {
+        const foundKey = Object.keys(ciMap).find(k => {
+          return k === studentReg || k.includes(studentReg) || studentReg.includes(k);
+        });
+        if (foundKey) {
+          ci = ciMap[foundKey];
+        }
+      }
+
       return {
         num: index + 1,
         registro: reg.estudiante_registro || '---',
         nombre: reg.student?.nombre || reg.nombre_estudiante || '---',
+        ci: ci,
         tipo: isExt ? 'Externo' : 'Interno',
         ref: phone,
         estado: reg.estado || 'INSCRITO',
@@ -1222,11 +1239,12 @@ export default function App() {
       };
     });
 
-    const headers = [['N°', 'Registro/Ticket', 'Nombre del Estudiante', 'Tipo', 'Celular / WhatsApp', 'Estado']];
+    const headers = [['N°', 'Registro/Ticket', 'Nombre del Estudiante', 'C.I. / Carnet', 'Tipo', 'Celular / WhatsApp', 'Estado']];
     const bodyRows = formattedData.map(r => [
       r.num,
       r.registro,
       r.nombre,
+      r.ci,
       r.tipo,
       r.ref,
       r.estado
@@ -1249,8 +1267,9 @@ export default function App() {
         1: { cellWidth: 26 },
         2: { cellWidth: 'auto' },
         3: { cellWidth: 20, halign: 'center' },
-        4: { cellWidth: 32, halign: 'center' },
-        5: { cellWidth: 24, halign: 'center' }
+        4: { cellWidth: 15, halign: 'center' },
+        5: { cellWidth: 32, halign: 'center' },
+        6: { cellWidth: 20, halign: 'center' }
       },
       headStyles: {
         fillColor: [4, 120, 87], // #047857 esmeralda oscuro
@@ -1503,28 +1522,34 @@ export default function App() {
     // Filter out canceled or annulled registrations strictly so only "INSCRITO" active students are shown
     const activeFilteredRegistrations = filteredRegistrations.filter((r: any) => (r.estado || 'INSCRITO').trim().toUpperCase() !== 'ANULADO');
 
-    // Fetch corresponding celular_whatsapp from 'inscripciones_congreso'
+    // Fetch corresponding celular_whatsapp and cedula_identidad from 'inscripciones_congreso'
     let phonesMap: Record<string, string> = {};
+    let ciMap: Record<string, string> = {};
     
     try {
       const { data: phoneData, error: phoneErr } = await supabase
         .from('inscripciones_congreso')
-        .select('registro_universitario, id_ticket, celular_whatsapp')
+        .select('registro_universitario, id_ticket, celular_whatsapp, cedula_identidad')
         .limit(2000);
       
       if (!phoneErr && phoneData) {
         phoneData.forEach((row: any) => {
           const phone = (row.celular_whatsapp || '').trim() || '---';
+          const rCi = (row.cedula_identidad || '').trim() || '---';
           if (row.registro_universitario) {
-            phonesMap[row.registro_universitario.trim().toLowerCase()] = phone;
+            const key = row.registro_universitario.trim().toLowerCase();
+            phonesMap[key] = phone;
+            ciMap[key] = rCi;
           }
           if (row.id_ticket) {
-            phonesMap[row.id_ticket.trim().toLowerCase()] = phone;
+            const key = row.id_ticket.trim().toLowerCase();
+            phonesMap[key] = phone;
+            ciMap[key] = rCi;
           }
         });
       }
     } catch (err) {
-      console.error("Error fetching phone numbers from inscripciones_congreso:", err);
+      console.error("Error fetching phone numbers and CI from inscripciones_congreso:", err);
     }
 
     // Create new PDF layout (A4 vertical)
@@ -1591,13 +1616,14 @@ export default function App() {
     doc.setTextColor(15, 23, 42);
     doc.text(`${totalInscritos} Ocupados ${totalCuposMax ? `/ ${totalCuposMax} Totales` : ''}`, margin + 42, boxY + 30);
 
-    // Build Table Rows With Columns: N°, Registro, Nombre, Tipo, Celular / WhatsApp, Estado
+    // Build Table Rows With Columns: N°, Registro, Nombre, C.I., Tipo, Celular / WhatsApp, Estado
     const formattedData = activeFilteredRegistrations.map((reg: any, index: number) => {
       const student = reg.student || reg.estudiantes;
       const isExt = !student || !student.registro;
       const studentReg = (reg.estudiante_registro || '').trim().toLowerCase();
       
       let phone = phonesMap[studentReg] || '---';
+      let ci = student?.ci || ciMap[studentReg] || '---';
       
       // Fallback: If no match, clean up and do fuzzy match on keys
       if (phone === '---' && studentReg) {
@@ -1609,10 +1635,20 @@ export default function App() {
         }
       }
 
+      if (ci === '---' && studentReg) {
+        const foundKey = Object.keys(ciMap).find(k => {
+          return k === studentReg || k.includes(studentReg) || studentReg.includes(k);
+        });
+        if (foundKey) {
+          ci = ciMap[foundKey];
+        }
+      }
+
       return {
         num: index + 1,
         registro: reg.estudiante_registro || '---',
         nombre: reg.nombre_estudiante || student?.nombre || '---',
+        ci: ci,
         tipo: isExt ? 'Externo' : 'Interno',
         ref: phone,
         estado: reg.estado || 'INSCRITO',
@@ -1620,11 +1656,12 @@ export default function App() {
       };
     });
 
-    const headers = [['N°', 'Registro/Ticket', 'Nombre del Estudiante', 'Tipo', 'Celular / WhatsApp', 'Estado']];
+    const headers = [['N°', 'Registro/Ticket', 'Nombre del Estudiante', 'C.I. / Carnet', 'Tipo', 'Celular / WhatsApp', 'Estado']];
     const bodyRows = formattedData.map(r => [
       r.num,
       r.registro,
       r.nombre,
+      r.ci,
       r.tipo,
       r.ref,
       r.estado
@@ -1647,8 +1684,9 @@ export default function App() {
         1: { cellWidth: 26 },
         2: { cellWidth: 'auto' },
         3: { cellWidth: 20, halign: 'center' },
-        4: { cellWidth: 32, halign: 'center' },
-        5: { cellWidth: 24, halign: 'center' }
+        4: { cellWidth: 15, halign: 'center' },
+        5: { cellWidth: 32, halign: 'center' },
+        6: { cellWidth: 20, halign: 'center' }
       },
       headStyles: {
         fillColor: [4, 120, 87], // #047857 esmeralda oscuro
