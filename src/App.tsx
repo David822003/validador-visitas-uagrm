@@ -658,10 +658,82 @@ export default function App() {
     setRegError('');
     
     try {
-      // Create a clean payload object to avoid stale state issues
-      const registroId = currentStudent.registro;
+      // Create a clean payload object to avoid stale state issues and apply strict .trim()
+      const registroId = String(currentStudent.registro || '').trim();
       const visitId = String(showRegModal); // Ensure it's string (UUID)
       const visitName = availableVisits.find(v => v.id === visitId)?.nombre || 'Visita Técnica';
+
+      // Ensure that this student actually exists in the 'estudiantes' master table
+      // to avoid violating the foreign key constraint: 'inscripciones_estudiante_registro_fkey'
+      const { data: existingEst, error: checkEstErr } = await supabase
+        .from('estudiantes')
+        .select('registro')
+        .eq('registro', registroId)
+        .maybeSingle();
+
+      if (!existingEst) {
+        console.log(`Student ${registroId} not found in 'estudiantes' table. Searching in 'inscripciones_congreso' to perform dynamic fallback registration...`);
+        // Query to search across congressional records
+        const { data: congData, error: congErr } = await supabase
+          .from('inscripciones_congreso')
+          .select('*')
+          .or(`registro_universitario.eq.${registroId},id_ticket.eq.${registroId},cedula_identidad.eq.${registroId}`);
+
+        if (congData && congData.length > 0) {
+          const match = congData[0];
+          let resolvedLevel = 10;
+          if (match.semestre) {
+            const semText = match.semestre.toLowerCase().trim();
+            if (semText.includes('egresado') || semText.includes('graduado') || semText.includes('externo')) {
+              resolvedLevel = 10;
+            } else {
+              const semMatch = semText.match(/\d+/);
+              resolvedLevel = semMatch ? parseInt(semMatch[0], 10) : 10;
+            }
+          }
+
+          const studentRecord = {
+            registro: registroId,
+            nombre: (match.nombre_completo || match.nombre || currentStudent.nombre || 'Asistente').trim().toUpperCase(),
+            carrera: match.carrera || currentStudent.carrera || 'Ingeniería Civil',
+            semestre_activo: match.semestre || String(resolvedLevel),
+            niv: resolvedLevel,
+            ci: (match.cedula_identidad || currentStudent.ci || '').trim(),
+            obs: match.id_ticket || '',
+            correo: match.correo_electronico || '',
+            celular: match.celular_whatsapp || '',
+            lugar: match.lugar || ''
+          };
+
+          const { error: insertErr } = await supabase
+            .from('estudiantes')
+            .upsert(studentRecord, { onConflict: 'registro' });
+
+          if (insertErr) {
+            console.error("Fallback auto-registration in estudiantes failed:", insertErr);
+          } else {
+            console.log("Fallback auto-registration in estudiantes completed for:", registroId);
+          }
+        } else {
+          // If they aren't even in inscripciones_congreso, create a basic record to protect the foreign key constraint
+          console.log(`Student ${registroId} not found in 'inscripciones_congreso' either. Pre-creating basic row in 'estudiantes' to avoid foreign key violation.`);
+          const basicRecord = {
+            registro: registroId,
+            nombre: String(currentStudent.nombre || 'Estudiante').trim().toUpperCase(),
+            carrera: String(currentStudent.carrera || 'Ingeniería Civil'),
+            semestre_activo: String(currentStudent.semestre_activo || '10'),
+            niv: currentStudent.nivel || currentStudent.niv || 10,
+            ci: String(currentStudent.ci || '').trim()
+          };
+          const { error: insertErr } = await supabase
+            .from('estudiantes')
+            .upsert(basicRecord, { onConflict: 'registro' });
+          
+          if (insertErr) {
+            console.error("Basic record pre-creation in 'estudiantes' failed:", insertErr);
+          }
+        }
+      }
 
       // 1. Fetch live visit details to verify capacity limits
       const { data: liveVisit, error: visitFetchError } = await supabase
