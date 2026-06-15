@@ -300,9 +300,8 @@ export default function App() {
   // Load Initial Data
   useEffect(() => {
     fetchVisits();
-    if (userRole === 'admin') {
-      fetchAllRegistrations();
-    } else if (userRole === 'student' && currentStudent) {
+    fetchAllRegistrations();
+    if (userRole === 'student' && currentStudent) {
       fetchStudentRegistrations(currentStudent.registro);
     }
   }, [userRole, currentStudent]);
@@ -743,6 +742,7 @@ export default function App() {
       } else {
         await fetchStudentRegistrations(registroId);
         await fetchVisits();
+        await fetchAllRegistrations();
         setShowRegModal(null);
         alert('¡Inscripción completada con éxito!');
       }
