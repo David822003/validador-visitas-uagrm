@@ -655,14 +655,49 @@ export default function App() {
     }
 
     setIsBooking(showRegModal);
-    setRegError('');
-    
-    try {
+       try {
       // Create a clean payload object to avoid stale state issues and apply strict .trim()
       const registroId = String(currentStudent.registro || '').trim();
       const visitId = String(showRegModal); // Ensure it's string (UUID)
       const visitName = availableVisits.find(v => v.id === visitId)?.nombre || 'Visita Técnica';
 
+      // --- RULE 1 & 2: Verify the visit identity and fetch live capacity limits and currently enrolled ---
+      const { data: liveVisit, error: visitFetchError } = await supabase
+        .from('visitas')
+        .select('cupos_max, nombre')
+        .eq('id', visitId)
+        .single();
+
+      if (visitFetchError || !liveVisit) {
+        throw new Error('No se pudo encontrar la visita seleccionada.');
+      }
+
+      const limit = liveVisit.cupos_max;
+
+      // Fetch live count of non-canceled registrations
+      const { data: liveRegs, error: countError } = await supabase
+        .from('inscripciones')
+        .select('id, estado')
+        .eq('visita_id', visitId)
+        .neq('estado', 'ANULADO');
+
+      if (countError) {
+        throw new Error('No se pudo verificar la disponibilidad de cupos.');
+      }
+
+      const currentCount = liveRegs ? liveRegs.length : 0;
+
+      // --- RULE 3: Strict mathematical restriction (Inscritos >= Capacity) ---
+      // Rejects the enrollment immediately and does NOT generate any insertion or updating query whatsoever.
+      if (currentCount >= limit) {
+        const errorMsg = {
+          "status": "error",
+          "message": "Lo sentimos, los cupos para esta visita técnica se han agotado por completo. No es posible procesar más registros."
+        };
+        throw new Error(JSON.stringify(errorMsg));
+      }
+
+      // --- PROCEED ONLY IF UNDER CAPACITY ---
       // Ensure that this student actually exists in the 'estudiantes' master table
       // to avoid violating the foreign key constraint: 'inscripciones_estudiante_registro_fkey'
       const { data: existingEst, error: checkEstErr } = await supabase
@@ -735,40 +770,6 @@ export default function App() {
         }
       }
 
-      // 1. Fetch live visit details to verify capacity limits
-      const { data: liveVisit, error: visitFetchError } = await supabase
-        .from('visitas')
-        .select('cupos_max, nombre')
-        .eq('id', visitId)
-        .single();
-
-      if (visitFetchError || !liveVisit) {
-        throw new Error('No se pudo encontrar la visita seleccionada.');
-      }
-
-      const limit = liveVisit.cupos_max;
-
-      // 2. Fetch live count of non-canceled registrations
-      const { data: liveRegs, error: countError } = await supabase
-        .from('inscripciones')
-        .select('id, estado')
-        .eq('visita_id', visitId)
-        .neq('estado', 'ANULADO');
-
-      if (countError) {
-        throw new Error('No se pudo verificar la disponibilidad de cupos.');
-      }
-
-      const currentCount = liveRegs ? liveRegs.length : 0;
-
-      if (currentCount >= limit) {
-        setRegError('Esta visita técnica ya no cuenta con cupos disponibles.');
-        setIsBooking(null);
-        await fetchVisits();
-        await fetchAllRegistrations();
-        return;
-      }
-
       let comprobanteUrl = '';
 
       if (comprobanteFile) {
@@ -825,8 +826,18 @@ export default function App() {
       }
     } catch (err: any) {
       console.error(err);
+      let parsedMessage = err.message || 'Error desconocido al registrar asistencia.';
+      try {
+        const parsed = JSON.parse(err.message);
+        if (parsed && parsed.status === 'error' && parsed.message) {
+          parsedMessage = parsed.message;
+        }
+      } catch (e) {
+        // Not JSON formatted error
+      }
+
       if (!handleSupabaseError(err)) {
-        setRegError(err.message || 'Error desconocido al registrar asistencia.');
+        setRegError(parsedMessage);
       }
     } finally {
       setIsBooking(null);
