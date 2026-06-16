@@ -30,6 +30,27 @@ const getDayAndDateStr = (fechaStr: string) => {
   return `${capitalizedDay}, ${parts[2]}/${parts[1]}/${parts[0]}`;
 };
 
+const sortVisitsChronologically = (visits: TechnicalVisit[]): TechnicalVisit[] => {
+  return [...visits].sort((a, b) => {
+    // 1. Primary Criterion: Date (ascending, e.g. "2026-06-16" before "2026-06-18")
+    const dateA = a.fecha || '';
+    const dateB = b.fecha || '';
+    if (dateA !== dateB) {
+      return dateA.localeCompare(dateB);
+    }
+
+    // 2. Secondary Criterion: Start time (ascending, e.g. "08:15" before "12:30")
+    const getStartTime = (horarioStr: string) => {
+      const parts = (horarioStr || '').split('-');
+      return parts[0] ? parts[0].trim() : '';
+    };
+
+    const timeA = getStartTime(a.horario || '');
+    const timeB = getStartTime(b.horario || '');
+    return timeA.localeCompare(timeB);
+  });
+};
+
 // --- Components ---
 
 function CEICBackground() {
@@ -326,7 +347,8 @@ export default function App() {
             requiereSeguro: requiereSeguro
           };
         });
-        setAvailableVisits(parsed);
+        const sortedVisits = sortVisitsChronologically(parsed);
+        setAvailableVisits(sortedVisits);
       }
     } catch (err) {
       console.error("Error fetching visits:", err);
@@ -1011,9 +1033,9 @@ export default function App() {
 
         // Update local state immediately for instant UI response
         if (data && data.length > 0) {
-          setAvailableVisits(prev => prev.map(v => v.id === editingVisit.id ? parseRow(data[0]) : v));
+          setAvailableVisits(prev => sortVisitsChronologically(prev.map(v => v.id === editingVisit.id ? parseRow(data[0]) : v)));
         } else {
-          setAvailableVisits(prev => prev.map(v => v.id === editingVisit.id ? { ...v, ...payload, requiereSeguro: visitForm.requiereSeguro, descripcion: visitForm.descripcion } as any : v));
+          setAvailableVisits(prev => sortVisitsChronologically(prev.map(v => v.id === editingVisit.id ? { ...v, ...payload, requiereSeguro: visitForm.requiereSeguro, descripcion: visitForm.descripcion } as any : v)));
         }
       } else {
         const { data, error } = await supabase
@@ -1030,7 +1052,7 @@ export default function App() {
 
         // Insert in local state immediately
         if (data && data.length > 0) {
-          setAvailableVisits(prev => [...prev, parseRow(data[0])]);
+          setAvailableVisits(prev => sortVisitsChronologically([...prev, parseRow(data[0])]));
         }
       }
 
